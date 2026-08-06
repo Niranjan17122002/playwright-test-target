@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Login - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>Login</h1>
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required />
+
+      <button type="submit" id="login-submit">Log in</button>
+      <div class="message" id="login-message"></div>
+    </form>
+    <p>Demo credentials: <strong>demo</strong> / <strong>demo123</strong></p>
+  </main>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+      var message = document.getElementById('login-message');
+
+      if (username === 'demo' && password === 'demo123') {
+        message.textContent = 'Login successful. Redirecting...';
+        message.className = 'message success';
+        setTimeout(function () {
+          window.location.href = 'welcome.html';
+        }, 500);
+      } else {
+        message.textContent = 'Invalid username or password.';
+        message.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>
