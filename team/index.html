@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Team - Test Target App</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav>
+    <a href="../index.html" id="nav-home">Home</a>
+    <a href="../login.html" id="nav-login">Login</a>
+    <a href="../dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="index.html" id="nav-team">Team</a>
+    <a href="../contact.html" id="nav-contact">Contact</a>
+    <a href="../about.html" id="nav-about">About</a>
+  </nav>
+  <main class="wide">
+    <h1>Team</h1>
+    <label for="team-search">Search by name</label>
+    <input type="text" id="team-search" name="team-search" placeholder="e.g. Priya" />
+    <ul id="team-list" class="list">
+      <li class="list-item" data-name="Priya Nair"><span>Priya Nair</span><span class="tag">Manager</span></li>
+      <li class="list-item" data-name="Sam Okafor"><span>Sam Okafor</span><span class="tag">Scheduler</span></li>
+      <li class="list-item" data-name="Jordan Lee"><span>Jordan Lee</span><span class="tag">Staff</span></li>
+      <li class="list-item" data-name="Maria Chen"><span>Maria Chen</span><span class="tag">Staff</span></li>
+    </ul>
+    <p id="team-empty-message" class="message" style="display:none;">No team members match your search.</p>
+  </main>
+
+  <script>
+    document.getElementById('team-search').addEventListener('input', function (e) {
+      var query = e.target.value.trim().toLowerCase();
+      var items = document.querySelectorAll('#team-list .list-item');
+      var visibleCount = 0;
+      Array.prototype.forEach.call(items, function (item) {
+        var match = item.getAttribute('data-name').toLowerCase().indexOf(query) !== -1;
+        item.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+      document.getElementById('team-empty-message').style.display = visibleCount === 0 ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard - Test Target App</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav>
+    <a href="../index.html" id="nav-home">Home</a>
+    <a href="../login.html" id="nav-login">Login</a>
+    <a href="index.html" id="nav-dashboard">Dashboard</a>
+    <a href="../team/index.html" id="nav-team">Team</a>
+    <a href="../contact.html" id="nav-contact">Contact</a>
+    <a href="../about.html" id="nav-about">About</a>
+  </nav>
+  <main class="wide">
+    <h1>Dashboard</h1>
+    <form id="add-task-form">
+      <label for="task-title">New task</label>
+      <input type="text" id="task-title" name="task-title" placeholder="e.g. Review roster" required />
+      <button type="submit" id="add-task-submit">Add Task</button>
+    </form>
+    <ul id="task-list" class="list">
+      <li class="list-item" data-task="Publish next week's shifts">
+        <span>Publish next week's shifts</span>
+        <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
+      </li>
+      <li class="list-item" data-task="Approve pending time-off requests">
+        <span>Approve pending time-off requests</span>
+        <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
+      </li>
+    </ul>
+    <p id="task-empty-message" class="message" style="display:none;">No tasks yet.</p>
+    <p><a href="#" id="logout-link">Log out</a></p>
+  </main>
+
+  <script>
+    (function () {
+      if (localStorage.getItem('ttapp_logged_in') !== '1') {
+        window.location.href = '../login.html';
+        return;
+      }
+
+      var list = document.getElementById('task-list');
+      var emptyMsg = document.getElementById('task-empty-message');
+
+      function updateEmptyState() {
+        emptyMsg.style.display = list.children.length === 0 ? 'block' : 'none';
+      }
+
+      function addDeleteHandler(li) {
+        li.querySelector('.delete-task-btn').addEventListener('click', function () {
+          li.remove();
+          updateEmptyState();
+        });
+      }
+
+      Array.prototype.forEach.call(list.querySelectorAll('li'), addDeleteHandler);
+      updateEmptyState();
+
+      document.getElementById('add-task-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('task-title');
+        var title = input.value.trim();
+        if (!title) return;
+
+        var li = document.createElement('li');
+        li.className = 'list-item';
+        li.setAttribute('data-task', title);
+        li.innerHTML = '<span></span><button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>';
+        li.querySelector('span').textContent = title;
+        list.appendChild(li);
+        addDeleteHandler(li);
+        updateEmptyState();
+        input.value = '';
+      });
+
+      document.getElementById('logout-link').addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.removeItem('ttapp_logged_in');
+        window.location.href = '../login.html';
+      });
+    })();
+  </script>
+</body>
+</html>
