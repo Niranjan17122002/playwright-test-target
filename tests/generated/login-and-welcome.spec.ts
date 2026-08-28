@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
+function getBaseURL(): string {
+  const fromEnv = process.env.BASE_URL;
+  if (fromEnv) {
+    return fromEnv.replace(/\/+$/, '');
+  }
+  // Prefer this Playwright project's configured baseURL (the address the
+  // harness actually starts the server on), then fall back to localhost.
+  // localhost resolves to both IPv4 and IPv6, unlike 127.0.0.1 which forced
+  // the connection-refused IPv4-only address when the server bound elsewhere.
+  return (test.info().project.use.baseURL ?? 'http://localhost:3000').replace(/\/+$/, '');
+}
 
 test('POSITIVE: Log in with valid credentials and land on the welcome page', async ({ page }) => {
   test.setTimeout(120000);
@@ -8,6 +18,8 @@ test('POSITIVE: Log in with valid credentials and land on the welcome page', asy
     type: 'test-data',
     description: 'login: process.env.APP_USERNAME / process.env.APP_PASSWORD (this static app validates against its demo credentials, which must be supplied via env vars)',
   });
+
+  const baseURL = getBaseURL();
 
   // 1. Open the login page
   await page.goto(`${baseURL}/login.html`, { waitUntil: 'domcontentloaded' });
@@ -35,6 +47,8 @@ test('POSITIVE: Log in with valid credentials and land on the welcome page', asy
 });
 
 test('NEGATIVE: Invalid credentials show an error and stay on the login page', async ({ page }) => {
+  const baseURL = getBaseURL();
+
   // 1. Open the login page
   await page.goto(`${baseURL}/login.html`, { waitUntil: 'domcontentloaded' });
 
