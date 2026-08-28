@@ -10,8 +10,12 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_BASE_URL,
     browserName: 'chromium',
     headless: true,
-    screenshot: 'only-on-failure',
-    trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    // Captured for every test, not just failures -- same reasoning as local
+    // headed execution's own config: this runs on a GitHub-hosted runner
+    // with no one watching live, so the screenshot/video/trace in the
+    // report is the only way to actually see what a passed run did too.
+    screenshot: 'on',
+    trace: 'on',
+    video: 'on',
   },
 });
