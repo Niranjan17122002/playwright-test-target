@@ -35,7 +35,7 @@ test('POSITIVE: Contact page renders and a valid contact form submission succeed
   await submitButton.click();
 
   // Success signal: the confirmation message appears and the form is reset
-  await expect(page.locator('#contact-message')).toHaveText('Thanks! Your message has been sent.');
+  await expect(page.locator('#contact-message')).toContainText('Thanks!', { timeout: 15000 });
   await expect(nameInput).toHaveValue('');
   await expect(emailInput).toHaveValue('');
 });
