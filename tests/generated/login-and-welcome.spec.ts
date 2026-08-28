@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL ?? 'http://localhost:3000';
+const baseURL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
 
 test('POSITIVE: Log in with valid credentials and land on the welcome page', async ({ page }) => {
   test.setTimeout(120000);
