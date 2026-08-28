@@ -20,9 +20,9 @@ test('POSITIVE: Contact page renders and a valid contact form submission succeed
   await expect(messageTextarea).toBeVisible();
   await expect(submitButton).toBeVisible();
 
-  // Use non-literal test data; email comes from env when available so no real credential is committed
+  // Use non-literal test data; generate a valid email so native validation cannot block the submission
   const name = `Test User ${Date.now()}`;
-  const email = process.env.APP_USERNAME ?? `contact.${Date.now()}@example.com`;
+  const email = `test.${Date.now()}@example.com`;
   const message = `Automated contact message ${Date.now()}`;
 
   test.info().annotations.push({ type: 'test-data', description: `name: ${name}` });
