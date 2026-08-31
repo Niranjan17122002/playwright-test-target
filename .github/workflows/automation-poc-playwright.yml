@@ -20,9 +20,14 @@ jobs:
           node-version: 20
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test --browser=chromium
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Run Playwright tests (headed, via virtual display)
+        run: xvfb-run --auto-servernum -- npx playwright test --headed --browser=chromium
         env:
           PLAYWRIGHT_BASE_URL: ${{ inputs.base_url }}
+          APP_USERNAME: ${{ secrets.APP_USERNAME }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
