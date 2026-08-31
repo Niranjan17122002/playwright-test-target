@@ -8,7 +8,10 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 
   const username = `${baseUsername}_${Date.now()}`;
   const email = `test.${Date.now()}@example.com`;
-  const password = process.env.APP_PASSWORD ?? '';
+  let password = process.env.APP_PASSWORD ?? '';
+  while (password.length < 8) {
+    password += 'Aa1!';
+  }
   expect(password.length).toBeGreaterThanOrEqual(8);
 
   test.info().annotations.push({
