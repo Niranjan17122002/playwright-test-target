@@ -6,10 +6,10 @@ test.describe('Sign Up - Register a new account', () => {
 
     const email = `test.${Date.now()}@example.com`;
     const fullName = `Test User ${Date.now()}`;
-    const username = process.env.APP_USERNAME ?? 'testuser';
+    const username = `testuser${Date.now()}`;
     const password = process.env.APP_PASSWORD ?? 'TestPassword123!';
     test.info().annotations.push({ type: 'test-data', description: `email: ${email}` });
-    test.info().annotations.push({ type: 'test-data', description: 'username/password come from APP_USERNAME/APP_PASSWORD env vars (fake fallbacks when unset)' });
+    test.info().annotations.push({ type: 'test-data', description: `username: ${username}` });
 
     // 1. Open the site home page
     await page.goto('', { waitUntil: 'domcontentloaded' });
