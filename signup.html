@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign Up - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>Create an Account</h1>
+    <form id="signup-form">
+      <label for="signup-fullname">Full name</label>
+      <input type="text" id="signup-fullname" name="fullname" required />
+
+      <label for="signup-username">Username</label>
+      <input type="text" id="signup-username" name="username" required />
+
+      <label for="signup-email">Email</label>
+      <input type="email" id="signup-email" name="email" required />
+
+      <label for="signup-password">Password</label>
+      <input type="password" id="signup-password" name="password" required />
+
+      <label for="signup-confirm-password">Confirm password</label>
+      <input type="password" id="signup-confirm-password" name="confirm-password" required />
+
+      <button type="submit" id="signup-submit">Sign Up</button>
+      <div class="message" id="signup-message"></div>
+    </form>
+    <p>Already have an account? <a href="login.html">Log in</a></p>
+  </main>
+
+  <script>
+    (function () {
+      var RESERVED_USERNAMES = ['demo', 'admin'];
+      var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function getRegisteredUsers() {
+        try {
+          return JSON.parse(localStorage.getItem('ttapp_registered_users') || '[]');
+        } catch (e) {
+          return [];
+        }
+      }
+
+      document.getElementById('signup-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fullname = document.getElementById('signup-fullname').value.trim();
+        var username = document.getElementById('signup-username').value.trim();
+        var email = document.getElementById('signup-email').value.trim();
+        var password = document.getElementById('signup-password').value;
+        var confirmPassword = document.getElementById('signup-confirm-password').value;
+        var message = document.getElementById('signup-message');
+
+        var users = getRegisteredUsers();
+        var taken = RESERVED_USERNAMES.indexOf(username.toLowerCase()) !== -1 ||
+          users.some(function (u) { return u.username.toLowerCase() === username.toLowerCase(); });
+
+        if (!fullname || !username || !email || !password || !confirmPassword) {
+          message.textContent = 'All fields are required.';
+          message.className = 'message error';
+          return;
+        }
+        if (!EMAIL_RE.test(email)) {
+          message.textContent = 'Enter a valid email address.';
+          message.className = 'message error';
+          return;
+        }
+        if (taken) {
+          message.textContent = 'That username is already taken.';
+          message.className = 'message error';
+          return;
+        }
+        if (password.length < 8) {
+          message.textContent = 'Password must be at least 8 characters.';
+          message.className = 'message error';
+          return;
+        }
+        if (password !== confirmPassword) {
+          message.textContent = 'Passwords do not match.';
+          message.className = 'message error';
+          return;
+        }
+
+        users.push({ fullname: fullname, username: username, email: email, password: password });
+        localStorage.setItem('ttapp_registered_users', JSON.stringify(users));
+        message.textContent = 'Account created. You can now log in.';
+        message.className = 'message success';
+        document.getElementById('signup-form').reset();
+      });
+    })();
+  </script>
+</body>
+</html>

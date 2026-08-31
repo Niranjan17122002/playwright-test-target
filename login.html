@@ -26,7 +26,8 @@
       <button type="submit" id="login-submit">Log in</button>
       <div class="message" id="login-message"></div>
     </form>
-    <p>Demo credentials: <strong>demo</strong> / <strong>demo123</strong></p>
+    <p>Demo credentials: <strong>demo</strong> / <strong>demo123</strong> (standard user), or <strong>admin</strong> / <strong>admin123</strong> (admin).</p>
+    <p><a href="signup.html" id="signup-link">Create an account</a> &middot; <a href="forgot-password.html" id="forgot-password-link">Forgot password?</a></p>
   </main>
 
   <script>
@@ -36,8 +37,16 @@
       var password = document.getElementById('password').value;
       var message = document.getElementById('login-message');
 
+      var role = null;
       if (username === 'demo' && password === 'demo123') {
+        role = 'user';
+      } else if (username === 'admin' && password === 'admin123') {
+        role = 'admin';
+      }
+
+      if (role) {
         localStorage.setItem('ttapp_logged_in', '1');
+        localStorage.setItem('ttapp_role', role);
         message.textContent = 'Login successful. Redirecting...';
         message.className = 'message success';
         setTimeout(function () {

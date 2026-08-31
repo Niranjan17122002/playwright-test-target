@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main class="wide">
+    <div id="admin-access-denied" class="message" style="display:none;"></div>
+    <div id="admin-content" style="display:none;">
+      <h1 id="admin-heading">Admin Panel</h1>
+      <p>Signed in as an administrator.</p>
+      <ul class="list">
+        <li class="list-item"><span>Registered users</span><span class="tag" id="admin-user-count">0</span></li>
+        <li class="list-item"><span>Active session role</span><span class="tag">admin</span></li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      if (localStorage.getItem('ttapp_logged_in') !== '1') {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (localStorage.getItem('ttapp_role') !== 'admin') {
+        var denied = document.getElementById('admin-access-denied');
+        denied.innerHTML = 'You do not have permission to view this page. ' +
+          '<a href="dashboard/index.html" id="back-to-dashboard-link">Back to Dashboard</a>.';
+        denied.className = 'message error';
+        denied.style.display = 'block';
+        return;
+      }
+      document.getElementById('admin-content').style.display = 'block';
+      var users = [];
+      try { users = JSON.parse(localStorage.getItem('ttapp_registered_users') || '[]'); } catch (e) {}
+      document.getElementById('admin-user-count').textContent = String(users.length);
+    })();
+  </script>
+</body>
+</html>

@@ -84,3 +84,100 @@ ul.list {
   font-size: 0.8rem;
   font-weight: 600;
 }
+
+/* Products table */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+table.data-table th, table.data-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+table.data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+table.data-table th.sortable:hover { color: #2563eb; }
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pagination button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Wizard */
+.wizard-step { display: none; }
+.wizard-step.active { display: block; }
+.wizard-progress {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+.field-error {
+  color: #991b1b;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: none;
+}
+.field-error.visible { display: block; }
+
+/* Session timeout */
+.countdown { font-size: 1.75rem; font-weight: 700; color: #2563eb; }
+
+/* Toast notifications */
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+.toast {
+  background: #1f2937;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 220px;
+}
+.toast-close {
+  margin-top: 0;
+  background: transparent;
+  color: #fff;
+  border: none;
+  padding: 0 0.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Home page modules grid */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.module-card {
+  display: block;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-weight: 600;
+  background: #f9fafb;
+}
+.module-card:hover { border-color: #2563eb; color: #2563eb; }

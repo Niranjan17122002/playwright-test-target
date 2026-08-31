@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Notifications - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>Notifications</h1>
+    <button type="button" id="show-notification-btn">Show Notification</button>
+    <h2>History</h2>
+    <ul id="notification-log" class="list"></ul>
+    <p id="notification-log-empty">No notifications yet.</p>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script>
+    (function () {
+      var count = 0;
+
+      function logNotification(text) {
+        document.getElementById('notification-log-empty').style.display = 'none';
+        var li = document.createElement('li');
+        li.className = 'list-item';
+        li.textContent = text;
+        document.getElementById('notification-log').appendChild(li);
+      }
+
+      document.getElementById('show-notification-btn').addEventListener('click', function () {
+        count++;
+        var text = 'Notification #' + count + ' at ' + new Date().toLocaleTimeString();
+
+        var toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.id = 'toast-' + count;
+        toast.innerHTML = '<span></span><button type="button" class="toast-close" aria-label="Dismiss">&times;</button>';
+        toast.children[0].textContent = text;
+
+        var timeoutId = setTimeout(function () { toast.remove(); }, 4000);
+        toast.querySelector('.toast-close').addEventListener('click', function () {
+          clearTimeout(timeoutId);
+          toast.remove();
+        });
+
+        document.getElementById('toast-container').appendChild(toast);
+        logNotification(text);
+      });
+    })();
+  </script>
+</body>
+</html>

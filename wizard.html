@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Create Project Wizard - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>Create Project</h1>
+    <p class="wizard-progress" id="wizard-progress">Step 1 of 3</p>
+
+    <section id="wizard-step-1" class="wizard-step active">
+      <label for="wizard-project-name">Project name</label>
+      <input type="text" id="wizard-project-name" name="project-name" required />
+      <p class="field-error" id="wizard-step-1-error">Project name is required.</p>
+      <button type="button" id="wizard-next-1">Next</button>
+    </section>
+
+    <section id="wizard-step-2" class="wizard-step">
+      <label for="wizard-environment">Environment</label>
+      <select id="wizard-environment" name="environment">
+        <option value="staging">Staging</option>
+        <option value="production">Production</option>
+      </select>
+      <label for="wizard-description">Description</label>
+      <textarea id="wizard-description" name="description" rows="3"></textarea>
+      <button type="button" id="wizard-back-2">Back</button>
+      <button type="button" id="wizard-next-2">Next</button>
+    </section>
+
+    <section id="wizard-step-3" class="wizard-step">
+      <h2>Review</h2>
+      <p><strong>Name:</strong> <span id="wizard-review-name"></span></p>
+      <p><strong>Environment:</strong> <span id="wizard-review-environment"></span></p>
+      <p><strong>Description:</strong> <span id="wizard-review-description"></span></p>
+      <button type="button" id="wizard-back-3">Back</button>
+      <button type="button" id="wizard-finish">Finish</button>
+    </section>
+
+    <div class="message" id="wizard-success-message"></div>
+  </main>
+
+  <script>
+    (function () {
+      var steps = [
+        document.getElementById('wizard-step-1'),
+        document.getElementById('wizard-step-2'),
+        document.getElementById('wizard-step-3')
+      ];
+      var progress = document.getElementById('wizard-progress');
+
+      function show(index) {
+        steps.forEach(function (s, i) { s.classList.toggle('active', i === index); });
+        progress.textContent = 'Step ' + (index + 1) + ' of ' + steps.length;
+      }
+
+      document.getElementById('wizard-next-1').addEventListener('click', function () {
+        var name = document.getElementById('wizard-project-name').value.trim();
+        var error = document.getElementById('wizard-step-1-error');
+        if (!name) {
+          error.classList.add('visible');
+          return;
+        }
+        error.classList.remove('visible');
+        show(1);
+      });
+
+      document.getElementById('wizard-back-2').addEventListener('click', function () { show(0); });
+
+      document.getElementById('wizard-next-2').addEventListener('click', function () {
+        document.getElementById('wizard-review-name').textContent = document.getElementById('wizard-project-name').value.trim();
+        document.getElementById('wizard-review-environment').textContent = document.getElementById('wizard-environment').value;
+        document.getElementById('wizard-review-description').textContent = document.getElementById('wizard-description').value.trim() || '(none)';
+        show(2);
+      });
+
+      document.getElementById('wizard-back-3').addEventListener('click', function () { show(1); });
+
+      document.getElementById('wizard-finish').addEventListener('click', function () {
+        var name = document.getElementById('wizard-project-name').value.trim();
+        var successMsg = document.getElementById('wizard-success-message');
+        successMsg.textContent = 'Project "' + name + '" created successfully.';
+        successMsg.className = 'message success';
+      });
+
+      show(0);
+    })();
+  </script>
+</body>
+</html>

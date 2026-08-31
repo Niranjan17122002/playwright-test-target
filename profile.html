@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Profile - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>My Profile</h1>
+    <form id="profile-form">
+      <label for="profile-display-name">Display name</label>
+      <input type="text" id="profile-display-name" name="display-name" required />
+
+      <label for="profile-email">Email</label>
+      <input type="email" id="profile-email" name="email" required />
+
+      <button type="submit" id="profile-save">Save Changes</button>
+      <div class="message" id="profile-message"></div>
+    </form>
+
+    <h1>Change Password</h1>
+    <form id="change-password-form">
+      <label for="current-password">Current password</label>
+      <input type="password" id="current-password" name="current-password" required />
+
+      <label for="change-new-password">New password</label>
+      <input type="password" id="change-new-password" name="new-password" required />
+
+      <label for="change-confirm-password">Confirm new password</label>
+      <input type="password" id="change-confirm-password" name="confirm-password" required />
+
+      <button type="submit" id="change-password-submit">Update Password</button>
+      <div class="message" id="change-password-message"></div>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      if (localStorage.getItem('ttapp_logged_in') !== '1') {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      var DEFAULT_PROFILE = { displayName: 'Demo User', email: 'demo@example.com' };
+
+      function loadProfile() {
+        try {
+          return Object.assign({}, DEFAULT_PROFILE, JSON.parse(localStorage.getItem('ttapp_profile') || '{}'));
+        } catch (e) {
+          return DEFAULT_PROFILE;
+        }
+      }
+
+      var profile = loadProfile();
+      document.getElementById('profile-display-name').value = profile.displayName;
+      document.getElementById('profile-email').value = profile.email;
+
+      document.getElementById('profile-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var displayName = document.getElementById('profile-display-name').value.trim();
+        var email = document.getElementById('profile-email').value.trim();
+        var message = document.getElementById('profile-message');
+
+        if (!displayName || !email) {
+          message.textContent = 'Display name and email are required.';
+          message.className = 'message error';
+          return;
+        }
+
+        localStorage.setItem('ttapp_profile', JSON.stringify({ displayName: displayName, email: email }));
+        message.textContent = 'Profile updated.';
+        message.className = 'message success';
+      });
+
+      document.getElementById('change-password-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var current = document.getElementById('current-password').value;
+        var next = document.getElementById('change-new-password').value;
+        var confirmPassword = document.getElementById('change-confirm-password').value;
+        var message = document.getElementById('change-password-message');
+
+        if (current !== 'demo123') {
+          message.textContent = 'Current password is incorrect.';
+          message.className = 'message error';
+          return;
+        }
+        if (next.length < 8) {
+          message.textContent = 'New password must be at least 8 characters.';
+          message.className = 'message error';
+          return;
+        }
+        if (next !== confirmPassword) {
+          message.textContent = 'New passwords do not match.';
+          message.className = 'message error';
+          return;
+        }
+
+        message.textContent = 'Password updated.';
+        message.className = 'message success';
+        document.getElementById('change-password-form').reset();
+      });
+    })();
+  </script>
+</body>
+</html>

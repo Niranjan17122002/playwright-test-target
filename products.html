@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Products - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main class="wide">
+    <h1>Products</h1>
+    <label for="product-search">Search by name</label>
+    <input type="text" id="product-search" name="product-search" placeholder="e.g. Product 01" />
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" id="sort-name" data-sort="name">Name</th>
+          <th>Category</th>
+          <th class="sortable" id="sort-price" data-sort="price">Price</th>
+          <th class="sortable" id="sort-stock" data-sort="stock">Stock</th>
+        </tr>
+      </thead>
+      <tbody id="product-table-body"></tbody>
+    </table>
+    <p id="product-empty-message" class="message" style="display:none;">No products match your search.</p>
+
+    <div class="pagination">
+      <button type="button" id="prev-page-btn">Previous</button>
+      <span id="page-indicator">Page 1</span>
+      <button type="button" id="next-page-btn">Next</button>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var CATEGORIES = ['Apparel', 'Electronics', 'Home', 'Outdoor', 'Toys'];
+      var PAGE_SIZE = 10;
+
+      var products = [];
+      for (var i = 1; i <= 35; i++) {
+        products.push({
+          name: 'Product ' + (i < 10 ? '0' + i : i),
+          category: CATEGORIES[i % CATEGORIES.length],
+          price: Math.round((5 + (i * 3.37) % 95) * 100) / 100,
+          stock: (i * 7) % 50
+        });
+      }
+
+      var state = { query: '', sortKey: null, sortDir: 1, page: 1 };
+
+      function getFiltered() {
+        var query = state.query.toLowerCase();
+        var rows = products.filter(function (p) { return p.name.toLowerCase().indexOf(query) !== -1; });
+        if (state.sortKey) {
+          rows.sort(function (a, b) {
+            var av = a[state.sortKey], bv = b[state.sortKey];
+            if (av < bv) return -1 * state.sortDir;
+            if (av > bv) return 1 * state.sortDir;
+            return 0;
+          });
+        }
+        return rows;
+      }
+
+      function render() {
+        var filtered = getFiltered();
+        var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (state.page > totalPages) state.page = totalPages;
+        var start = (state.page - 1) * PAGE_SIZE;
+        var pageRows = filtered.slice(start, start + PAGE_SIZE);
+
+        var tbody = document.getElementById('product-table-body');
+        tbody.innerHTML = '';
+        pageRows.forEach(function (p) {
+          var tr = document.createElement('tr');
+          tr.setAttribute('data-name', p.name);
+          tr.innerHTML = '<td></td><td></td><td></td><td></td>';
+          tr.children[0].textContent = p.name;
+          tr.children[1].textContent = p.category;
+          tr.children[2].textContent = '$' + p.price.toFixed(2);
+          tr.children[3].textContent = p.stock;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('product-empty-message').style.display = filtered.length === 0 ? 'block' : 'none';
+        document.getElementById('page-indicator').textContent = 'Page ' + state.page + ' of ' + totalPages;
+        document.getElementById('prev-page-btn').disabled = state.page <= 1;
+        document.getElementById('next-page-btn').disabled = state.page >= totalPages;
+      }
+
+      document.getElementById('product-search').addEventListener('input', function (e) {
+        state.query = e.target.value.trim();
+        state.page = 1;
+        render();
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll('th.sortable'), function (th) {
+        th.addEventListener('click', function () {
+          var key = th.getAttribute('data-sort');
+          if (state.sortKey === key) {
+            state.sortDir = -state.sortDir;
+          } else {
+            state.sortKey = key;
+            state.sortDir = 1;
+          }
+          render();
+        });
+      });
+
+      document.getElementById('prev-page-btn').addEventListener('click', function () {
+        if (state.page > 1) { state.page--; render(); }
+      });
+      document.getElementById('next-page-btn').addEventListener('click', function () {
+        state.page++; render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
