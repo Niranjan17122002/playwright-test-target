@@ -10,16 +10,16 @@ test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page })
   }
 
   await page.goto('', { waitUntil: 'domcontentloaded' });
-  await page.locator('#link-admin').click();
+  await page.locator('#link-admin').click({ noWaitAfter: true });
 
   await page.locator('#login-form').waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('#username').fill(username);
   await page.locator('#password').fill(password);
-  await page.locator('#login-submit').click();
+  await page.locator('#login-submit').click({ noWaitAfter: true });
 
   await page.waitForURL(url => url.toString().includes('welcome.html'), { timeout: 15000 });
 
-  await page.locator('#link-admin').click();
+  await page.locator('#link-admin').click({ noWaitAfter: true });
   await page.waitForURL(url => url.toString().includes('admin.html'), { timeout: 15000 });
 
   await expect(page.locator('#admin-heading')).toBeVisible({ timeout: 15000 });
