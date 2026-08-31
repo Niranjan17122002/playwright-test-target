@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('POSITIVE: valid account email requests reset and new password is accepted', async ({ page }) => {
   test.setTimeout(120000);
 
-  const email = process.env.APP_USERNAME ?? `test.${Date.now()}@example.com`;
+  const email = `test.${Date.now()}@example.com`;
   const newPassword = `Reset${Date.now()}${process.env.APP_PASSWORD ?? 'a1'}`;
   test.info().annotations.push({ type: 'test-data', description: `email: ${email}` });
   test.info().annotations.push({ type: 'test-data', description: `new-password: ${newPassword}` });
