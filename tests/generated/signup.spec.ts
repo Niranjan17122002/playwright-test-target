@@ -21,7 +21,7 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create Your Account');
+  await expect(page.locator('h1')).toHaveText('Create an Account');
 
   await page.locator('#signup-fullname').fill('Test User');
   await page.locator('#signup-username').fill(username);
@@ -38,7 +38,7 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 test('NEGATIVE: Sign up rejects mismatched passwords', async ({ page }) => {
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create Your Account');
+  await expect(page.locator('h1')).toHaveText('Create an Account');
 
   await page.locator('#signup-fullname').fill('Negative Test User');
   await page.locator('#signup-username').fill(`negative_${Date.now()}`);
@@ -74,7 +74,7 @@ test('POSITIVE: Sign up with an optional referral code shows confirmation', asyn
 
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create Your Account');
+  await expect(page.locator('h1')).toHaveText('Create an Account');
 
   await page.locator('#signup-fullname').fill('Referral Test User');
   await page.locator('#signup-username').fill(username);
