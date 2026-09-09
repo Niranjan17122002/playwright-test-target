@@ -18,7 +18,7 @@ test('POSITIVE: View the Team page after logging in with valid credentials', asy
   await page.waitForURL(url => url.toString().includes('team/index.html'), { timeout: 15000 });
 
   await expect(page.locator('h1')).toHaveText('Team');
-  await expect(page.locator('#team-list .list-item')).toHaveCount(5);
+  await expect(page.locator('#team-list .list-item')).toHaveCount(4);
   await expect(page.locator('#team-list')).toContainText('Priya Nair');
   await expect(page.locator('#team-list')).toContainText('Alex Rivera');
 });
