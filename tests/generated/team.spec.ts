@@ -20,7 +20,7 @@ test('POSITIVE: View the Team page after logging in with valid credentials', asy
   await expect(page.locator('h1')).toHaveText('Team');
   await expect(page.locator('#team-list .list-item')).toHaveCount(4);
   await expect(page.locator('#team-list')).toContainText('Priya Nair');
-  await expect(page.locator('#team-list')).toContainText('Alex Rivera');
+  await expect(page.locator('#team-list')).toContainText('Sam Okafor');
 });
 
 test('NEGATIVE: Invalid credentials are rejected on the login page', async ({ page }) => {
