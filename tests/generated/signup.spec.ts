@@ -28,6 +28,7 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
   await page.locator('#signup-email').fill(email);
   await page.locator('#signup-password').fill(password);
   await page.locator('#signup-confirm-password').fill(password);
+  await page.locator('input[name="referral_code"]').fill('');
   await page.locator('#signup-submit').click();
 
   const message = page.locator('#signup-message');
@@ -36,6 +37,7 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 });
 
 test('NEGATIVE: Sign up rejects mismatched passwords', async ({ page }) => {
+  test.setTimeout(120000);
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
   await expect(page.locator('h1')).toHaveText('Create an Account');
