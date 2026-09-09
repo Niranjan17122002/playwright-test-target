@@ -46,7 +46,7 @@
         toast.innerHTML = '<span></span><button type="button" class="toast-close" aria-label="Dismiss">&times;</button>';
         toast.children[0].textContent = text;
 
-        var timeoutId = setTimeout(function () { toast.remove(); }, 4000);
+        var timeoutId = setTimeout(function () { toast.remove(); }, 6000);
         toast.querySelector('.toast-close').addEventListener('click', function () {
           clearTimeout(timeoutId);
           toast.remove();
