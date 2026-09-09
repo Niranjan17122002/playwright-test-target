@@ -19,7 +19,7 @@ test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page })
 
   await page.waitForURL(url => url.toString().includes('welcome.html'), { timeout: 15000 });
 
-  await page.locator('#link-admin').click({ noWaitAfter: true });
+  await page.locator('#admin-link').click({ noWaitAfter: true });
   await page.waitForURL(url => url.toString().includes('admin.html'), { timeout: 15000 });
 
   await expect(page.locator('#admin-heading')).toBeVisible({ timeout: 15000 });
