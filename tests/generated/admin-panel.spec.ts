@@ -22,8 +22,8 @@ test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page })
   await page.locator('#admin-link').click({ noWaitAfter: true });
   await page.waitForURL(url => url.toString().includes('admin.html'), { timeout: 15000 });
 
-  await expect(page.locator('#admin-heading')).toBeVisible({ timeout: 15000 });
-  await expect(page.locator('#admin-heading')).toHaveText('Administrator Dashboard');
+  await expect(page.getByRole('heading', { name: 'Administrator Dashboard' })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('heading', { name: 'Administrator Dashboard' })).toHaveText('Administrator Dashboard');
 });
 
 test('NEGATIVE: invalid credentials are rejected before Admin Panel access', async ({ page }) => {
