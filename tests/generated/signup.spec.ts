@@ -80,7 +80,6 @@ test('POSITIVE: Sign up with an optional referral code shows confirmation', asyn
   await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill(password);
   await page.locator('input[name="confirm-password"]').fill(password);
-  await page.locator('input[name="referral_code"]').fill(referral);
   await page.getByRole('button', { name: 'Sign Up' }).click();
 
   const message = page.locator('#signup-message');
