@@ -21,7 +21,7 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create Your Account');
+  await expect(page.locator('h1')).toHaveText('Create an Account');
 
   await page.locator('#signup-fullname').fill('Test User');
   await page.locator('#signup-username').fill(username);
@@ -39,7 +39,7 @@ test('NEGATIVE: Sign up rejects mismatched passwords', async ({ page }) => {
   test.setTimeout(120000);
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create Your Account');
+  await expect(page.locator('h1')).toHaveText('Create an Account');
 
   await page.locator('#signup-fullname').fill('Negative Test User');
   await page.locator('#signup-username').fill(`negative_${Date.now()}`);
