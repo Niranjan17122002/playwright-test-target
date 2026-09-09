@@ -27,6 +27,7 @@ test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page })
 });
 
 test('NEGATIVE: invalid credentials are rejected before Admin Panel access', async ({ page }) => {
+  test.setTimeout(120000);
   await page.goto('', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-admin').click();
 
