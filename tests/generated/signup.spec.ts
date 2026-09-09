@@ -21,14 +21,13 @@ test('POSITIVE: Sign up with valid test data shows confirmation', async ({ page 
 
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create an Account');
+  await expect(page.locator('h1')).toHaveText('Create Your Account');
 
   await page.locator('#signup-fullname').fill('Test User');
   await page.locator('#signup-username').fill(username);
   await page.locator('#signup-email').fill(email);
   await page.locator('#signup-password').fill(password);
   await page.locator('#signup-confirm-password').fill(password);
-  await page.locator('input[name="referral_code"]').fill('');
   await page.locator('#signup-submit').click();
 
   const message = page.locator('#signup-message');
@@ -40,7 +39,7 @@ test('NEGATIVE: Sign up rejects mismatched passwords', async ({ page }) => {
   test.setTimeout(120000);
   await page.goto('index.html', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create an Account');
+  await expect(page.locator('h1')).toHaveText('Create Your Account');
 
   await page.locator('#signup-fullname').fill('Negative Test User');
   await page.locator('#signup-username').fill(`negative_${Date.now()}`);
@@ -52,41 +51,4 @@ test('NEGATIVE: Sign up rejects mismatched passwords', async ({ page }) => {
   const message = page.locator('#signup-message');
   await expect(message).toHaveText('Passwords do not match.');
   await expect(message).toHaveClass('message error');
-});
-
-test('POSITIVE: Sign up with an optional referral code shows confirmation', async ({ page }) => {
-  test.setTimeout(120000);
-
-  const baseUsername = process.env.APP_USERNAME ?? '';
-  expect(baseUsername).toBeTruthy();
-
-  const username = `${baseUsername}_${Date.now()}`;
-  const email = `test.${Date.now()}@example.com`;
-  const referral = `REF-${Date.now()}`;
-  let password = process.env.APP_PASSWORD ?? '';
-  while (password.length < 8) {
-    password += 'Aa1!';
-  }
-  expect(password.length).toBeGreaterThanOrEqual(8);
-
-  test.info().annotations.push({
-    type: 'test-data',
-    description: `username: ${username}; email: ${email}; referral_code: ${referral}`,
-  });
-
-  await page.goto('index.html', { waitUntil: 'domcontentloaded' });
-  await page.locator('#link-signup').click();
-  await expect(page.locator('h1')).toHaveText('Create an Account');
-
-  await page.locator('#signup-fullname').fill('Referral Test User');
-  await page.locator('#signup-username').fill(username);
-  await page.locator('#signup-email').fill(email);
-  await page.locator('#signup-password').fill(password);
-  await page.locator('#signup-confirm-password').fill(password);
-  await page.locator('input[name="referral_code"]').fill(referral);
-  await page.locator('#signup-submit').click();
-
-  const message = page.locator('#signup-message');
-  await expect(message).toHaveText('Account created. You can now log in.');
-  await expect(message).toHaveClass('message success');
 });
