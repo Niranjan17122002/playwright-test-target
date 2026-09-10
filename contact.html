@@ -35,9 +35,8 @@
     document.getElementById('contact-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var message = document.getElementById('contact-message');
-      message.textContent = 'Thanks! Your message has been sent.';
-      message.className = 'message success';
-      document.getElementById('contact-form').reset();
+      message.textContent = 'Something went wrong. Please try again later.';
+      message.className = 'message error';
     });
   </script>
 </body>
