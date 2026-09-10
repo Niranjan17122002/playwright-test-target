@@ -15,7 +15,6 @@ test.describe('Contact inquiry', () => {
 
     await page.locator('#name').fill(name);
     await page.locator('#email').fill(email);
-    await page.locator('#subject').fill('Website feedback');
     await page.locator('#message').fill('Hello! This is an automated test inquiry.');
     await page.locator('#contact-submit').click();
 
@@ -33,7 +32,6 @@ test.describe('Contact inquiry', () => {
 
     await page.locator('#name').fill('Test User');
     await page.locator('#email').fill('not-an-email');
-    await page.locator('#subject').fill('Website feedback');
     await page.locator('#message').fill('This should not submit.');
     await page.locator('#contact-submit').click();
 
@@ -51,7 +49,6 @@ test.describe('Contact inquiry', () => {
 
     await page.locator('#name').fill('Test User');
     await page.locator('#email').fill(`test.${Date.now()}@example.com`);
-    await page.locator('#message').fill('This should not submit without a subject.');
     await page.locator('#contact-submit').click();
 
     await expect(page.locator('#contact-message')).toHaveText('');
