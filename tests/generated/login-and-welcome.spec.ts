@@ -34,7 +34,7 @@ test('POSITIVE: Log in with valid credentials and land on the welcome page', asy
   await passwordInput.fill(process.env.APP_PASSWORD ?? '');
 
   // 3. Submit the login form
-  await page.getByRole('button', { name: 'Sign me in' }).click();
+  await page.getByRole('button', { name: 'Log in' }).click();
 
   // 4. Wait for the redirect to welcome.html (the app navigates ~500ms after a successful login)
   await page.waitForURL((url) => url.toString().includes('welcome'), { timeout: 15000 });
