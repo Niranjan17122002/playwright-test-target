@@ -18,6 +18,14 @@
     <h1>Team</h1>
     <label for="team-search">Search by name</label>
     <input type="text" id="team-search" name="team-search" placeholder="e.g. Priya" />
+    <label for="team-role">Role</label>
+    <select id="team-role" name="team-role">
+      <option value="">All roles</option>
+      <option value="manager">Manager</option>
+      <option value="scheduler">Scheduler</option>
+      <option value="staff">Staff</option>
+    </select>
+    <button type="button" id="team-search-button">Search</button>
     <ul id="team-list" class="list">
       <li class="list-item" data-name="Priya Nair"><span>Priya Nair</span><span class="tag">Manager</span></li>
       <li class="list-item" data-name="Sam Okafor"><span>Sam Okafor</span><span class="tag">Scheduler</span></li>
@@ -25,19 +33,43 @@
       <li class="list-item" data-name="Maria Chen"><span>Maria Chen</span><span class="tag">Staff</span></li>
     </ul>
     <p id="team-empty-message" class="message" style="display:none;">No team members match your search.</p>
+
+    <h2>Invite a team member</h2>
+    <form id="invite-form">
+      <label for="invite-email">Email</label>
+      <input type="email" id="invite-email" name="invite-email" required />
+      <label for="invite-role">Role</label>
+      <select id="invite-role" name="invite-role">
+        <option value="staff">Staff</option>
+        <option value="scheduler">Scheduler</option>
+        <option value="manager">Manager</option>
+      </select>
+      <button type="submit" id="invite-submit">Send invite</button>
+    </form>
+    <p id="invite-message" class="message" style="display:none;"></p>
   </main>
 
   <script>
-    document.getElementById('team-search').addEventListener('input', function (e) {
-      var query = e.target.value.trim().toLowerCase();
+    function filterTeam() {
+      var query = document.getElementById('team-search').value.trim().toLowerCase();
+      var role = document.getElementById('team-role').value;
       var items = document.querySelectorAll('#team-list .list-item');
       var visibleCount = 0;
       Array.prototype.forEach.call(items, function (item) {
-        var match = item.getAttribute('data-name').toLowerCase().indexOf(query) !== -1;
+        var tag = item.querySelector('.tag').textContent.toLowerCase();
+        var match = item.getAttribute('data-name').toLowerCase().indexOf(query) !== -1 && (!role || tag === role);
         item.style.display = match ? '' : 'none';
         if (match) visibleCount++;
       });
       document.getElementById('team-empty-message').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+    // The list is filtered only when the Search button is clicked.
+    document.getElementById('team-search-button').addEventListener('click', filterTeam);
+    document.getElementById('invite-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var msg = document.getElementById('invite-message');
+      msg.textContent = 'Invite sent to ' + document.getElementById('invite-email').value;
+      msg.style.display = 'block';
     });
   </script>
 </body>
