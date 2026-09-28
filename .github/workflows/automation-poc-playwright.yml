@@ -9,6 +9,10 @@ on:
       execution_id:
         description: Backend execution id
         required: true
+      spec_files:
+        description: Space-separated spec filenames to run (empty = run every generated spec)
+        required: false
+        default: ""
 
 jobs:
   playwright:
@@ -23,7 +27,7 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Run Playwright tests (headed, via virtual display)
-        run: xvfb-run --auto-servernum -- npx playwright test --headed --browser=chromium
+        run: xvfb-run --auto-servernum -- npx playwright test --headed --browser=chromium ${{ inputs.spec_files }}
         env:
           PLAYWRIGHT_BASE_URL: ${{ inputs.base_url }}
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
