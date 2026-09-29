@@ -1,4 +1,10 @@
 import { defineConfig } from '@playwright/test';
+import * as path from 'path';
+
+// Answers people gave to the AI's questions (HITL): uploaded files are in
+// ./test-data, secret answers arrive as one JSON environment variable.
+process.env.TEST_DATA_DIR = process.env.TEST_DATA_DIR || path.join(__dirname, 'test-data');
+try { Object.assign(process.env, JSON.parse(process.env.HITL_SECRETS_JSON || '{}')); } catch { /* none */ }
 
 export default defineConfig({
   testDir: './tests/generated',
