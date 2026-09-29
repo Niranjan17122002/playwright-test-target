@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Timesheet - Test Target App</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem; }
+    th, td { border-bottom: 1px solid #e5e7eb; padding: 0.35rem 0.5rem; text-align: left; }
+    #timesheet-summary { margin-top: 0.75rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" id="nav-home">Home</a>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="dashboard/index.html" id="nav-dashboard">Dashboard</a>
+    <a href="team/index.html" id="nav-team">Team</a>
+    <a href="contact.html" id="nav-contact">Contact</a>
+    <a href="about.html" id="nav-about">About</a>
+  </nav>
+  <main>
+    <h1>Approve a Timesheet</h1>
+    <form id="timesheet-form" novalidate>
+      <label for="timesheet-file">Timesheet file (.csv with Name and Hours columns)</label>
+      <input type="file" id="timesheet-file" name="timesheet" accept=".csv" />
+
+      <table id="timesheet-table" hidden>
+        <thead><tr id="timesheet-head"></tr></thead>
+        <tbody id="timesheet-rows"></tbody>
+      </table>
+      <div id="timesheet-summary"></div>
+
+      <label for="approver">Approver</label>
+      <select id="approver" name="approver">
+        <option value="">Choose an approver</option>
+        <option>Priya Nair</option>
+        <option>John Smith</option>
+        <option>Alex Chen</option>
+      </select>
+
+      <label for="admin-code">Admin code</label>
+      <input type="password" id="admin-code" name="adminCode" autocomplete="off" />
+
+      <button type="submit" id="approve-submit">Approve timesheet</button>
+      <div class="message" id="timesheet-message" role="status"></div>
+    </form>
+  </main>
+  <script>
+    // Only a SHA-256 of the admin code is kept here -- the code itself is
+    // known to the admins, not written anywhere in this app.
+    var ADMIN_CODE_SHA256 = 'd2d8ec44de218ab085f992d20027f18fd3ce90ddbad6efcc24c9a33ca56ab2d7';
+    var REQUIRED_COLUMNS = ['Name', 'Hours'];
+    var parsed = null;
+
+    var fileInput = document.getElementById('timesheet-file');
+    var message = document.getElementById('timesheet-message');
+    var summary = document.getElementById('timesheet-summary');
+    var table = document.getElementById('timesheet-table');
+
+    function show(text, kind) {
+      message.textContent = text;
+      message.className = 'message ' + kind;
+    }
+
+    function parseCsv(text) {
+      var lines = text.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
+      var header = lines[0].split(',').map(function (h) { return h.trim(); });
+      var rows = lines.slice(1).map(function (l) { return l.split(',').map(function (c) { return c.trim(); }); });
+      return { header: header, rows: rows };
+    }
+
+    fileInput.addEventListener('change', function () {
+      parsed = null;
+      table.hidden = true;
+      summary.textContent = '';
+      show('', '');
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      if (!/\.csv$/i.test(file.name)) {
+        show('Only .csv timesheets are accepted.', 'error');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var data = parseCsv(String(reader.result || ''));
+        var lower = data.header.map(function (h) { return h.toLowerCase(); });
+        var missing = REQUIRED_COLUMNS.filter(function (c) { return lower.indexOf(c.toLowerCase()) === -1; });
+        if (missing.length) {
+          show('Missing column(s): ' + missing.join(', '), 'error');
+          return;
+        }
+        if (!data.rows.length) {
+          show('The timesheet has no rows.', 'error');
+          return;
+        }
+        var nameIdx = lower.indexOf('name');
+        var hoursIdx = lower.indexOf('hours');
+        var total = 0;
+        for (var i = 0; i < data.rows.length; i++) {
+          var hours = parseFloat(data.rows[i][hoursIdx]);
+          if (isNaN(hours) || hours < 0) {
+            show('Row ' + (i + 2) + ' has invalid hours.', 'error');
+            return;
+          }
+          total += hours;
+        }
+        document.getElementById('timesheet-head').innerHTML = '';
+        data.header.forEach(function (h) {
+          var th = document.createElement('th');
+          th.textContent = h;
+          document.getElementById('timesheet-head').appendChild(th);
+        });
+        var body = document.getElementById('timesheet-rows');
+        body.innerHTML = '';
+        data.rows.forEach(function (r) {
+          var tr = document.createElement('tr');
+          r.forEach(function (c) {
+            var td = document.createElement('td');
+            td.textContent = c;
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+        table.hidden = false;
+        var employee = data.rows[0][nameIdx];
+        summary.textContent = 'Employee: ' + employee + ' · Total hours: ' + total.toFixed(2);
+        parsed = { employee: employee, total: total };
+      };
+      reader.readAsText(file);
+    });
+
+    function sha256(text) {
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
+        return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+      });
+    }
+
+    document.getElementById('timesheet-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var approver = document.getElementById('approver').value;
+      var code = document.getElementById('admin-code').value;
+      if (!parsed) { show('Upload a valid timesheet first.', 'error'); return; }
+      if (!approver) { show('Choose an approver.', 'error'); return; }
+      if (!code) { show('Enter the admin code.', 'error'); return; }
+      sha256(code).then(function (hash) {
+        if (hash !== ADMIN_CODE_SHA256) {
+          show('Wrong admin code.', 'error');
+          return;
+        }
+        show('Timesheet approved by ' + approver + ': ' + parsed.total.toFixed(2) + ' hours for ' + parsed.employee + '.', 'success');
+      });
+    });
+  </script>
+</body>
+</html>
