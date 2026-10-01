@@ -8,12 +8,16 @@ try { Object.assign(process.env, JSON.parse(process.env.HITL_SECRETS_JSON || '{}
 
 export default defineConfig({
   testDir: './tests/generated',
+  // Logs in once and saves the session every test starts from (see
+  // auth.setup.ts); a test that logs in by itself starts signed out.
+  globalSetup: './auth.setup.ts',
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['json', { outputFile: 'playwright-report/results.json' }],
   ],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL,
+    storageState: './.auth/state.json',
     browserName: 'chromium',
     headless: true,
     // Captured for every test, not just failures -- same reasoning as local
