@@ -40,3 +40,4 @@ jobs:
           path: |
             playwright-report
             test-results
+            login-check
