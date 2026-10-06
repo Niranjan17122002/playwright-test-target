@@ -38,3 +38,10 @@ enough to gate pages client-side without a real backend. `signup.html` stores ne
    - `execution_mode` set to `github_ci`
    - `base_url` set to the GitHub Pages URL from step 2
 4. Run analysis → planning → generation → approve a spec → execute.
+
+## Flaky report page
+
+`flaky.html` (Report in the menu) loads a "report" after a random delay: about half of the loads
+answer at once and half take 7 seconds. A test that waits for "Report loaded: 42 rows" with the
+default 5 second timeout therefore passes on some attempts and fails on others. It exists to check
+how the automation app reports a flaky test. `?speed=fast` or `?speed=slow` forces one case.
