@@ -32,8 +32,28 @@ export default async function globalSetup(config: FullConfig) {
   const use = (config.projects[0]?.use || {}) as { channel?: string };
   const browser = await chromium.launch({ channel: use.channel, headless: true });
   try {
-    const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
-    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    let origin: string | undefined;
+    try { origin = new URL(base).origin; } catch { origin = undefined; }
+    const page = await (await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      // The browser's own sign-in box (HTTP Basic Auth), when the site has one.
+      httpCredentials: origin ? { username: user, password, origin } : undefined,
+    })).newPage();
+    // A wrong login comes back as a 401 page; no login at all as a browser error.
+    const boxRefused = { ok: false, reason: 'refused', message: "The site's browser sign-in box (HTTP Basic Auth) refused the saved login." };
+    try {
+      const response = await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      if (response?.status() === 401 && /basic/i.test(response.headers()['www-authenticate'] || '')) {
+        write(boxRefused);
+        return;
+      }
+    } catch (error) {
+      if (String((error as Error)?.message || error).includes('ERR_INVALID_AUTH_CREDENTIALS')) {
+        write(boxRefused);
+        return;
+      }
+      throw error;
+    }
     const pass = page.locator(PASSWORD_FIELD).filter({ visible: true }).first();
     const userField = page.locator(USER_FIELD).filter({ visible: true }).first();
     const shown = (el: typeof pass, ms: number) => el.waitFor({ state: 'visible', timeout: ms }).then(() => true, () => false);
