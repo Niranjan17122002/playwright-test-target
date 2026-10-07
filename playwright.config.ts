@@ -6,8 +6,19 @@ import * as path from 'path';
 process.env.TEST_DATA_DIR = process.env.TEST_DATA_DIR || path.join(__dirname, 'test-data');
 try { Object.assign(process.env, JSON.parse(process.env.HITL_SECRETS_JSON || '{}')); } catch { /* none */ }
 
+// The browser's own sign-in box (HTTP Basic Auth), when the site has one:
+// answered with the saved login, for the tested site only.
+function siteLogin() {
+  const username = process.env.APP_USERNAME;
+  const password = process.env.APP_PASSWORD;
+  const base = process.env.PLAYWRIGHT_BASE_URL;
+  if (!username || !password || !base) return undefined;
+  try { return { username, password, origin: new URL(base).origin }; } catch { return undefined; }
+}
+
 export default defineConfig({
   testDir: './tests/generated',
+  retries: 1,
   // Logs in once and saves the session every test starts from (see
   // auth.setup.ts); a test that logs in by itself starts signed out.
   globalSetup: './auth.setup.ts',
@@ -17,6 +28,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL,
+    httpCredentials: siteLogin(),
     storageState: './.auth/state.json',
     browserName: 'chromium',
     headless: true,
