@@ -6,5 +6,5 @@ test('POSITIVE: shows the loaded demo settings', async ({ page }) => {
     const res = await fetch('demo-settings-missing.json');
     if (res.ok) document.body.insertAdjacentHTML('afterbegin', '<h1>Settings loaded</h1>');
   });
-  await expect(page.getByRole('heading', { name: 'Settings loaded' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Settings loaded' })).toBeVisible({ timeout: 5000 });
 });
