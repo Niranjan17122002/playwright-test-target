@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+// Logs in by itself, so it starts signed out (the run's shared session
+// is for tests that start signed in).
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page }) => {
   test.setTimeout(120000);
@@ -19,16 +22,14 @@ test('POSITIVE: Admin Panel loads for valid admin credentials', async ({ page })
 
   await page.waitForURL(url => url.toString().includes('welcome.html'), { timeout: 15000 });
 
-  await page.locator('#admin-link').click({ noWaitAfter: true });
+  await page.locator('#link-admin').click({ noWaitAfter: true });
   await page.waitForURL(url => url.toString().includes('admin.html'), { timeout: 15000 });
 
-  const adminHeading = page.locator('h1, h2, h3').filter({ hasText: /Admin Dashboard|Administrator Dashboard|Admin Panel/i }).first();
-  await expect(adminHeading).toBeVisible({ timeout: 15000 });
-  await expect(adminHeading).toContainText(/Admin Dashboard|Administrator Dashboard|Admin Panel/i);
+  await expect(page.locator('#admin-heading')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#admin-heading')).toHaveText('Admin Panel');
 });
 
 test('NEGATIVE: invalid credentials are rejected before Admin Panel access', async ({ page }) => {
-  test.setTimeout(120000);
   await page.goto('', { waitUntil: 'domcontentloaded' });
   await page.locator('#link-admin').click();
 
