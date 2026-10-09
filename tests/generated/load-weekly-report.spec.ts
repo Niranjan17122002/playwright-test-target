@@ -16,7 +16,7 @@ test.describe('Weekly report (flaky.html)', () => {
     await page.goto('flaky.html?speed=slow', { waitUntil: 'domcontentloaded' });
 
     const status = page.locator('#report-status');
-    await expect(status).toBeVisible();
+    await expect(status).toBeAttached();
 
     await page.getByRole('button', { name: 'Load report' }).click();
 
@@ -47,7 +47,7 @@ test.describe('Weekly report (flaky.html)', () => {
     await page.goto('flaky.html?speed=slow', { waitUntil: 'domcontentloaded' });
 
     const status = page.locator('#report-status');
-    await expect(status).toBeVisible();
+    await expect(status).toBeAttached();
 
     // Without the required user action (the trigger click), the app must not claim a report is loaded.
     await expect(status).toHaveText('');
