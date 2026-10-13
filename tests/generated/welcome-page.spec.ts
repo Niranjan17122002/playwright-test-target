@@ -47,7 +47,7 @@ test.describe('Welcome Page Navigation', () => {
     // Attempt navigation with very short timeout to simulate load failure
     let errorOccurred = false;
     try {
-      await page.goto(WELCOME_PAGE_URL, { waitUntil: 'networkidle', timeout: 1000 });
+      await page.goto(WELCOME_PAGE_URL, { waitUntil: 'networkidle', timeout: 10 });
     } catch (error) {
       errorOccurred = true;
       expect(error).toBeDefined();
