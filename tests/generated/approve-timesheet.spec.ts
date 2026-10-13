@@ -18,7 +18,7 @@ function trackErrors(page: Page): string[] {
 }
 
 async function reportIssues(page: Page, consoleErrors: string[]) {
-  const axeResults = await new AxeBuilder({ page }).analyze();
+  const axeResults = await new AxeBuilder({ page }).setLegacyMode().analyze();
   if (axeResults.violations.length) {
     test.info().annotations.push({
       type: 'a11y-violations',
