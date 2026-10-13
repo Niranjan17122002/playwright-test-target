@@ -9,7 +9,7 @@ const allItems = (page: Page) => page.locator('#team-list .list-item');
 const emptyMessage = (page: Page) => page.locator('#team-empty-message');
 
 async function report(page: Page) {
-  const axe = await new AxeBuilder({ page }).analyze();
+  const axe = await new AxeBuilder({ page }).setLegacyMode().analyze();
   if (axe.violations.length) test.info().annotations.push({ type: 'a11y-violations', description: axe.violations.map(v => `${v.id}: ${v.help}`).join(' | ') });
   if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
 }
