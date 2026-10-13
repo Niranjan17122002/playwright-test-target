@@ -26,7 +26,7 @@ test.describe('Weekly report (flaky.html)', () => {
 
     if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
 
-    const axeResults = await new AxeBuilder({ page }).analyze();
+    const axeResults = await new AxeBuilder({ page }).setLegacyMode().analyze();
     if (axeResults.violations.length) {
       test.info().annotations.push({
         type: 'a11y-violations',
@@ -62,7 +62,7 @@ test.describe('Weekly report (flaky.html)', () => {
 
     if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
 
-    const axeResults = await new AxeBuilder({ page }).analyze();
+    const axeResults = await new AxeBuilder({ page }).setLegacyMode().analyze();
     if (axeResults.violations.length) {
       test.info().annotations.push({
         type: 'a11y-violations',
