@@ -251,7 +251,7 @@ test('STATE: removing every task shows the dashboard empty-state message', async
 
   await expect(items).toHaveCount(0);
   await expect(page.locator('#task-empty-message')).toBeVisible();
-  await expect(page.locator('#task-empty-message')).toHaveText('No tasks yet.');
+  await expect(page.locator('#task-empty-message')).toHaveText('Your task list is empty.');
 
   await reportDiagnostics(page, consoleErrors);
 });
