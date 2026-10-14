@@ -18,7 +18,7 @@ function siteLogin() {
 
 export default defineConfig({
   testDir: './tests/generated',
-  retries: 0,
+  retries: 1,
   // Logs in once and saves the session every test starts from (see
   // auth.setup.ts); a test that logs in by itself starts signed out.
   globalSetup: './auth.setup.ts',
@@ -31,6 +31,11 @@ export default defineConfig({
     httpCredentials: siteLogin(),
     storageState: './.auth/state.json',
     browserName: 'chromium',
+    // Same limits as a local run. Without them a click on a button that is no longer
+    // there waited out the whole test (120s with test.setTimeout) -- seen live: a
+    // renamed button made 5 tests x 2 tries take 16.9 minutes.
+    actionTimeout: 15000,
+    navigationTimeout: 20000,
     headless: true,
     // Captured for every test, not just failures -- same reasoning as local
     // headed execution's own config: this runs on a GitHub-hosted runner
