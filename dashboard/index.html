@@ -24,10 +24,12 @@
     <ul id="task-list" class="list">
       <li class="list-item" data-task="Publish next week's shifts">
         <span>Publish next week's shifts</span>
+        <button type="button" class="done-task-btn" aria-label="Mark task as done">Mark as done</button>
         <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
       </li>
       <li class="list-item" data-task="Approve pending time-off requests">
         <span>Approve pending time-off requests</span>
+        <button type="button" class="done-task-btn" aria-label="Mark task as done">Mark as done</button>
         <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
       </li>
     </ul>
@@ -49,6 +51,15 @@
         emptyMsg.style.display = list.children.length === 0 ? 'block' : 'none';
       }
 
+      function addDoneHandler(li) {
+        li.querySelector('.done-task-btn').addEventListener('click', function () {
+          li.classList.add('done');
+          li.querySelector('span').style.textDecoration = 'line-through';
+          this.textContent = 'Done';
+          this.disabled = true;
+        });
+      }
+
       function addDeleteHandler(li) {
         li.querySelector('.delete-task-btn').addEventListener('click', function () {
           li.remove();
@@ -57,6 +68,7 @@
       }
 
       Array.prototype.forEach.call(list.querySelectorAll('li'), addDeleteHandler);
+      Array.prototype.forEach.call(list.querySelectorAll('li'), addDoneHandler);
       updateEmptyState();
 
       document.getElementById('add-task-form').addEventListener('submit', function (e) {
@@ -68,10 +80,11 @@
         var li = document.createElement('li');
         li.className = 'list-item';
         li.setAttribute('data-task', title);
-        li.innerHTML = '<span></span><button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>';
+        li.innerHTML = '<span></span><button type="button" class="done-task-btn" aria-label="Mark task as done">Mark as done</button><button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>';
         li.querySelector('span').textContent = title;
         list.appendChild(li);
         addDeleteHandler(li);
+        addDoneHandler(li);
         updateEmptyState();
         input.value = '';
       });
