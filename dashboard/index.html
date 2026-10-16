@@ -19,7 +19,7 @@
     <form id="add-task-form">
       <label for="task-title">New task</label>
       <input type="text" id="task-title" name="task-title" placeholder="e.g. Review roster" required />
-      <button type="submit" id="add-task-submit">Add Task</button>
+      <button type="submit" id="add-task-submit">Create Task</button>
     </form>
     <ul id="task-list" class="list">
       <li class="list-item" data-task="Publish next week's shifts">
@@ -32,8 +32,6 @@
       </li>
     </ul>
     <p id="task-empty-message" class="message" style="display:none;">No tasks yet.</p>
-    <button type="button" id="clear-all-tasks">Clear all tasks</button>
-    <p id="clear-message" class="message" role="status" style="display:none;">All tasks cleared.</p>
     <p><a href="#" id="logout-link">Log out</a></p>
   </main>
 
@@ -76,12 +74,6 @@
         addDeleteHandler(li);
         updateEmptyState();
         input.value = '';
-      });
-
-      document.getElementById('clear-all-tasks').addEventListener('click', function () {
-        list.innerHTML = '';
-        updateEmptyState();
-        document.getElementById('clear-message').style.display = 'block';
       });
 
       document.getElementById('logout-link').addEventListener('click', function (e) {
