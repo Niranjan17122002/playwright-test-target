@@ -13,8 +13,9 @@ test.use({ storageState: { cookies: [], origins: [] } });
  * no maxlength/minlength/pattern) and submit button #add-task-submit "Create Task".
  * Submitting trims the value, ignores an empty result, appends an <li class="list-item">
  * to #task-list, clears the input and hides/shows #task-empty-message ("No tasks yet.").
- * A #task-search box (label "Search tasks") filters the list on input and shows
+ * A #task-search box (label "Filter tasks") filters the list on input and shows
  * #task-search-empty ("No task matches your search.") when nothing matches.
+ * A #sort-tasks button ("Sort A–Z") reorders the list alphabetically by data-task.
  * The list is DOM-only -- there is no data request and no paging control, so no request is
  * faked or delayed anywhere in this file.
  */
@@ -278,7 +279,7 @@ test('STATE: ending the session and reloading the dashboard returns to the sign-
   await reportDiagnostics(page, consoleErrors);
 });
 
-test('POSITIVE: the new Search tasks box filters the task list and reports when nothing matches', async ({ page }) => {
+test('POSITIVE: the Filter tasks box filters the task list and reports when nothing matches', async ({ page }) => {
   test.setTimeout(120000);
   const consoleErrors = trackConsoleErrors(page);
 
@@ -297,7 +298,7 @@ test('POSITIVE: the new Search tasks box filters the task list and reports when 
   await page.getByRole('button', { name: 'Create Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(3);
 
-  const searchInput = page.getByRole('searchbox', { name: 'Search tasks' });
+  const searchInput = page.getByRole('searchbox', { name: 'Filter tasks' });
   await expect(searchInput).toBeVisible();
   await expect(page.locator('#task-search-empty')).toBeHidden();
 
@@ -318,6 +319,35 @@ test('POSITIVE: the new Search tasks box filters the task list and reports when 
   await searchInput.fill('');
   await expect(createdItem).toBeVisible();
   await expect(page.locator('#task-search-empty')).toBeHidden();
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('POSITIVE: the Sort A–Z button reorders the task list alphabetically', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = trackConsoleErrors(page);
+
+  await loginAsUser(page);
+  await openDashboard(page);
+
+  // The two seeded tasks are present; add one of our own so the sort spans both.
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
+  await titleInput.fill(`AAA Sortable ${Date.now()}`);
+  await page.getByRole('button', { name: 'Create Task' }).click();
+  await expect(page.locator('#task-list li')).toHaveCount(3);
+
+  const sortButton = page.getByRole('button', { name: /Sort A.Z/ });
+  await expect(sortButton).toBeVisible();
+  await sortButton.click();
+
+  // After sorting, the data-task values are in ascending alphabetical order and the count is unchanged.
+  const afterSort = await page.locator('#task-list li').evaluateAll(
+    (items) => items.map((li) => li.getAttribute('data-task') || '')
+  );
+  const expected = [...afterSort].sort((a, b) => a.localeCompare(b));
+  expect(afterSort).toEqual(expected);
+  await expect(page.locator('#task-list li')).toHaveCount(3);
 
   await reportDiagnostics(page, consoleErrors);
 });
