@@ -45,7 +45,7 @@ test('POSITIVE: searching the dashboard filters the task list to matching tasks'
 
   await openDashboard(page);
 
-  const search = page.getByLabel('Search tasks');
+  const search = page.getByLabel('Filter tasks');
   const shiftsTask = page.locator('#task-list li').filter({ hasText: 'Publish next week' });
   const approveTask = page.locator('#task-list li').filter({ hasText: 'Approve pending' });
   const emptyMessage = page.locator('#task-search-empty');
@@ -61,18 +61,40 @@ test('POSITIVE: searching the dashboard filters the task list to matching tasks'
   await expect(emptyMessage).toBeHidden();
   await expect(page.locator('#task-list li:visible')).toHaveCount(1);
 
-  // Result area: the dashboard heading and its search box remain, with the filtered list shown.
+  // Result area: the dashboard heading and its filter box remain, with the filtered list shown.
   await expect(page.locator('main')).toMatchAriaSnapshot(`
     - heading "Dashboard"
-    - searchbox "Search tasks"
+    - searchbox "Filter tasks"
   `);
 
-  // Clearing the search restores every task.
+  // Clearing the filter restores every task.
   await search.fill('');
   await expect(shiftsTask).toBeVisible();
   await expect(approveTask).toBeVisible();
   await expect(page.locator('#task-list li:visible')).toHaveCount(2);
   await expect(emptyMessage).toBeHidden();
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('POSITIVE: the Sort A–Z button reorders the task list alphabetically by task name', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = attachDiagnostics(page);
+
+  await openDashboard(page);
+
+  const listItems = page.locator('#task-list li');
+
+  // Before sorting, the list is in insertion order: "Publish..." precedes "Approve...".
+  await expect(listItems.first()).toHaveAttribute('data-task', "Publish next week's shifts");
+  await expect(listItems.nth(1)).toHaveAttribute('data-task', 'Approve pending time-off requests');
+
+  await page.locator('#sort-tasks').click();
+
+  // Sorting A–Z moves "Approve pending time-off requests" ahead of "Publish next week's shifts".
+  await expect(listItems.first()).toHaveAttribute('data-task', 'Approve pending time-off requests');
+  await expect(listItems.nth(1)).toHaveAttribute('data-task', "Publish next week's shifts");
+  await expect(listItems).toHaveCount(2);
 
   await reportDiagnostics(page, consoleErrors);
 });
@@ -83,7 +105,7 @@ test('NEGATIVE: a search term with no match shows the empty message and hides al
 
   await openDashboard(page);
 
-  const search = page.getByLabel('Search tasks');
+  const search = page.getByLabel('Filter tasks');
   const emptyMessage = page.locator('#task-search-empty');
 
   // The no-match message is not displayed until a non-matching term is typed.
@@ -99,7 +121,7 @@ test('NEGATIVE: a search term with no match shows the empty message and hides al
 
   await expect(page.locator('main')).toMatchAriaSnapshot(`
     - heading "Dashboard"
-    - searchbox "Search tasks"
+    - searchbox "Filter tasks"
     - paragraph: No task matches your search.
   `);
 
@@ -117,10 +139,10 @@ test('BOUNDARY: the search box has no length limit and treats whitespace-only in
 
   await openDashboard(page);
 
-  const search = page.getByLabel('Search tasks');
+  const search = page.getByLabel('Filter tasks');
   const emptyMessage = page.locator('#task-search-empty');
 
-  // The search input is type="search" with no maxLength/minLength/pattern rule,
+  // The filter input is type="search" with no maxLength/minLength/pattern rule,
   // so an extreme 500-character term is kept exactly as typed (not truncated).
   const longTerm = 'a'.repeat(500);
   await search.fill(longTerm);
@@ -151,7 +173,7 @@ test('SECURITY: an unsafe search string is not executed and leaves the task list
 
   await openDashboard(page);
 
-  const search = page.getByLabel('Search tasks');
+  const search = page.getByLabel('Filter tasks');
   const payload = '<script>alert(1)</script>';
 
   await search.fill(payload);
@@ -174,7 +196,7 @@ test('STATE: ending the session redirects the dashboard to the sign-in page', as
   const consoleErrors = attachDiagnostics(page);
 
   await openDashboard(page);
-  await expect(page.getByLabel('Search tasks')).toBeVisible();
+  await expect(page.getByLabel('Filter tasks')).toBeVisible();
 
   // End the session the same way the app's own logout handler does, then reload the dashboard.
   await page.context().clearCookies();
