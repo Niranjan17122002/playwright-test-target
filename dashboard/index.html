@@ -17,10 +17,13 @@
   <main class="wide">
     <h1>Dashboard</h1>
     <form id="add-task-form">
-      <label for="task-title">New task</label>
+      <label for="task-title">Task name</label>
       <input type="text" id="task-title" name="task-title" placeholder="e.g. Review roster" required />
       <button type="submit" id="add-task-submit">Create Task</button>
     </form>
+    <label for="task-search">Search tasks</label>
+    <input type="search" id="task-search" name="task-search" placeholder="Type to filter the list" />
+    <p id="task-search-empty" class="message" style="display:none;">No task matches your search.</p>
     <ul id="task-list" class="list">
       <li class="list-item" data-task="Publish next week's shifts">
         <span>Publish next week's shifts</span>
@@ -31,6 +34,7 @@
         <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
       </li>
     </ul>
+    <p id="task-count" class="message"></p>
     <p id="task-empty-message" class="message" style="display:none;">No tasks yet.</p>
     <p><a href="#" id="logout-link">Log out</a></p>
   </main>
@@ -47,6 +51,8 @@
 
       function updateEmptyState() {
         emptyMsg.style.display = list.children.length === 0 ? 'block' : 'none';
+        var n = list.children.length;
+        document.getElementById('task-count').textContent = n + (n === 1 ? ' task' : ' tasks');
       }
 
       function addDeleteHandler(li) {
@@ -74,6 +80,19 @@
         addDeleteHandler(li);
         updateEmptyState();
         input.value = '';
+      });
+
+      var search = document.getElementById('task-search');
+      var searchEmpty = document.getElementById('task-search-empty');
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        var shown = 0;
+        Array.prototype.forEach.call(list.children, function (li) {
+          var match = !q || (li.getAttribute('data-task') || '').toLowerCase().indexOf(q) !== -1;
+          li.style.display = match ? '' : 'none';
+          if (match) shown++;
+        });
+        searchEmpty.style.display = q && shown === 0 && list.children.length > 0 ? 'block' : 'none';
       });
 
       document.getElementById('logout-link').addEventListener('click', function (e) {
