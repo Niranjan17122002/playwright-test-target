@@ -225,22 +225,26 @@ test('BOUNDARY: Task name has no maxlength so a very long value is kept in full'
   reportConsoleErrors(consoleErrors);
 });
 
-test('SECURITY: Dashboard requires login when signed out', async ({ page }) => {
-  const consoleErrors = trackErrors(page);
+test.describe('signed out', () => {
+  // Starts signed out: the run's shared session would skip the sign-in page it looks for.
+  test.use({ storageState: { cookies: [], origins: [] } });
+  test('SECURITY: Dashboard requires login when signed out', async ({ page }) => {
+    const consoleErrors = trackErrors(page);
 
-  // No signed-in state established -> the page must send the user to login.
-  await page.goto('dashboard/index.html', { waitUntil: 'domcontentloaded' });
+    // No signed-in state established -> the page must send the user to login.
+    await page.goto('dashboard/index.html', { waitUntil: 'domcontentloaded' });
 
-  await expect(page).toHaveURL(/login\.html/, { timeout: 15000 });
-  await expect(page.getByRole('textbox', { name: 'Username' })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
-  // The protected dashboard content never rendered.
-  await expect(page.locator('#task-list')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: SORT_BUTTON })).toHaveCount(0);
+    await expect(page).toHaveURL(/login\.html/, { timeout: 15000 });
+    await expect(page.getByRole('textbox', { name: 'Username' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
+    // The protected dashboard content never rendered.
+    await expect(page.locator('#task-list')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: SORT_BUTTON })).toHaveCount(0);
 
-  await runAxe(page);
-  reportConsoleErrors(consoleErrors);
+    await runAxe(page);
+    reportConsoleErrors(consoleErrors);
+  });
 });
 
 test('SECURITY: task name is rendered as inert plain text (no script execution)', async ({ page }) => {
