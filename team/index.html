@@ -16,7 +16,7 @@
   </nav>
   <main class="wide">
     <h1>Team</h1>
-    <label for="team-search">Search by name</label>
+    <label for="team-search">Find a teammate</label>
     <input type="text" id="team-search" name="team-search" placeholder="e.g. Priya" />
     <label for="team-role">Role</label>
     <select id="team-role" name="team-role">
@@ -26,6 +26,7 @@
       <option value="staff">Staff</option>
     </select>
     <button type="button" id="team-search-button">Search</button>
+    <button type="button" id="team-clear-button">Clear search</button>
     <ul id="team-list" class="list">
       <li class="list-item" data-name="Priya Nair"><span>Priya Nair</span><span class="tag">Manager</span></li>
       <li class="list-item" data-name="Sam Okafor"><span>Sam Okafor</span><span class="tag">Scheduler</span></li>
@@ -50,6 +51,13 @@
   </main>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('team-clear-button').addEventListener('click', function () {
+        document.getElementById('team-search').value = '';
+        document.getElementById('team-role').value = '';
+        filterTeam();
+      });
+    });
     function filterTeam() {
       var query = document.getElementById('team-search').value.trim().toLowerCase();
       var role = document.getElementById('team-role').value;
