@@ -9,10 +9,12 @@ test.use({ storageState: { cookies: [], origins: [] } });
  *
  * Evidence (source): the page is gated by
  *   if (localStorage.getItem('ttapp_logged_in') !== '1') -> ../login.html
- * The form is #add-task-form with label "New task" for #task-title (type=text, REQUIRED,
+ * The form is #add-task-form with label "Task name" for #task-title (type=text, REQUIRED,
  * no maxlength/minlength/pattern) and submit button #add-task-submit "Create Task".
  * Submitting trims the value, ignores an empty result, appends an <li class="list-item">
  * to #task-list, clears the input and hides/shows #task-empty-message ("No tasks yet.").
+ * A #task-search box (label "Search tasks") filters the list on input and shows
+ * #task-search-empty ("No task matches your search.") when nothing matches.
  * The list is DOM-only -- there is no data request and no paging control, so no request is
  * faked or delayed anywhere in this file.
  */
@@ -52,7 +54,7 @@ async function loginAsUser(page: Page) {
 async function openDashboard(page: Page) {
   await page.goto('dashboard/index.html', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('textbox', { name: 'New task' })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('textbox', { name: 'Task name' })).toBeVisible({ timeout: 15000 });
 }
 
 test('POSITIVE: creating a new task with a valid title adds it to the task list', async ({ page }) => {
@@ -68,7 +70,7 @@ test('POSITIVE: creating a new task with a valid title adds it to the task list'
   // The two seeded tasks are present before we add ours.
   await expect(page.locator('#task-list li')).toHaveCount(2);
 
-  const titleInput = page.getByRole('textbox', { name: 'New task' });
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
   const createButton = page.getByRole('button', { name: 'Create Task' });
   await expect(createButton).toBeEnabled();
 
@@ -104,7 +106,7 @@ test('NEGATIVE: submitting the task form with an empty title is rejected and sav
   await loginAsUser(page);
   await openDashboard(page);
 
-  const titleInput = page.getByRole('textbox', { name: 'New task' });
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
   const createButton = page.getByRole('button', { name: 'Create Task' });
 
   await expect(titleInput).toHaveValue('');
@@ -134,9 +136,9 @@ test('VALIDATION: the required task title blocks submission with its own message
   await loginAsUser(page);
   await openDashboard(page);
 
-  // dashboard/index.html marks exactly one field as required: #task-title, label "New task".
+  // dashboard/index.html marks exactly one field as required: #task-title, label "Task name".
   const requiredFields = [
-    { name: 'New task', locator: page.getByRole('textbox', { name: 'New task' }) },
+    { name: 'Task name', locator: page.getByRole('textbox', { name: 'Task name' }) },
   ];
 
   for (const field of requiredFields) {
@@ -160,7 +162,7 @@ test('VALIDATION: the required task title blocks submission with its own message
   }
 
   // The form also refuses a title that is nothing but whitespace (the handler trims it).
-  const titleInput = page.getByRole('textbox', { name: 'New task' });
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill('   ');
   const beforeWhitespace = await page.locator('#task-list li').count();
   await page.getByRole('button', { name: 'Create Task' }).click();
@@ -180,7 +182,7 @@ test('BOUNDARY: an extremely long task title is accepted and kept in full (no le
   await loginAsUser(page);
   await openDashboard(page);
 
-  const titleInput = page.getByRole('textbox', { name: 'New task' });
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
   const createButton = page.getByRole('button', { name: 'Create Task' });
 
   // Real rule from the source: #task-title only carries `required` -- maxLength -1 means no limit,
@@ -219,7 +221,7 @@ test('SECURITY: the dashboard requires a session, and script text typed as a tit
   await openDashboard(page);
 
   const payload = '<script>alert(1)</script>';
-  const titleInput = page.getByRole('textbox', { name: 'New task' });
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill(payload);
   await page.getByRole('button', { name: 'Create Task' }).click();
 
@@ -272,6 +274,50 @@ test('STATE: ending the session and reloading the dashboard returns to the sign-
   await expect(page.getByRole('textbox', { name: 'Username' })).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
   await expect(page.locator('#task-list')).toHaveCount(0);
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('POSITIVE: the new Search tasks box filters the task list and reports when nothing matches', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = trackConsoleErrors(page);
+
+  const taskTitle = `Searchable ${Date.now()}`;
+  test.info().annotations.push({ type: 'test-data', description: `task title: ${taskTitle}` });
+
+  await loginAsUser(page);
+  await openDashboard(page);
+
+  // The two seeded tasks are present before we add ours.
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+
+  // Add a task of our own so we are filtering over something this journey created.
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
+  await titleInput.fill(taskTitle);
+  await page.getByRole('button', { name: 'Create Task' }).click();
+  await expect(page.locator('#task-list li')).toHaveCount(3);
+
+  const searchInput = page.getByRole('searchbox', { name: 'Search tasks' });
+  await expect(searchInput).toBeVisible();
+  await expect(page.locator('#task-search-empty')).toBeHidden();
+
+  // A matching query keeps the created task visible and hides the rest.
+  await searchInput.fill('searchable');
+  const createdItem = page.locator('#task-list li').filter({ hasText: taskTitle });
+  await expect(createdItem).toBeVisible();
+  await expect(page.locator('#task-list li').filter({ hasText: "Publish next week's shifts" })).toBeHidden();
+  await expect(page.locator('#task-search-empty')).toBeHidden();
+
+  // A non-matching query hides every task and shows the no-match message.
+  await searchInput.fill('no-task-matches-this');
+  await expect(createdItem).toBeHidden();
+  await expect(page.locator('#task-search-empty')).toBeVisible();
+  await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
+
+  // Clearing the box restores the full list and hides the message again.
+  await searchInput.fill('');
+  await expect(createdItem).toBeVisible();
+  await expect(page.locator('#task-search-empty')).toBeHidden();
 
   await reportDiagnostics(page, consoleErrors);
 });
