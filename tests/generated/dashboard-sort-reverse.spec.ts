@@ -248,7 +248,10 @@ test('BOUNDARY: Task name has no maxlength — 1 and 500 characters are kept in 
   if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
 });
 
-test('SECURITY: Dashboard redirects to login when signed out and script text renders inert', async ({ page }) => {
+test.describe('SECURITY: signed-out visitor', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('SECURITY: Dashboard redirects to login when signed out and script text renders inert', async ({ page }) => {
   test.setTimeout(120000);
   const consoleErrors = collectConsoleErrors(page);
 
@@ -285,6 +288,7 @@ test('SECURITY: Dashboard redirects to login when signed out and script text ren
 
   await scanAccessibility(page);
   if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
+  });
 });
 
 test('STATE: Empty task list shows the real "No tasks yet." message', async ({ page }) => {
