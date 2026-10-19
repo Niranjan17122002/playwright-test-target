@@ -3,7 +3,12 @@ import AxeBuilder from '@axe-core/playwright';
 
 const TASK_SHIFTS = "Publish next week's shifts";
 const TASK_TIMEOFF = 'Approve pending time-off requests';
-const NO_MATCH_MESSAGE = 'No task matches your search.';
+
+// The empty-search message now echoes what was typed, trimmed:
+// 'No tasks match "<typed text>".'
+function noMatchMessage(query: string): string {
+  return `No tasks match "${query}".`;
+}
 
 function trackErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -101,9 +106,9 @@ test('NEGATIVE: a search term that matches no task shows the real empty message 
 
   await search.fill(noMatchQuery);
 
-  // The app's own wording, straight from the page source.
+  // The app's own wording, and it now echoes the text that was typed.
   await expect(emptyMsg).toBeVisible();
-  await expect(emptyMsg).toHaveText(NO_MATCH_MESSAGE);
+  await expect(emptyMsg).toHaveText(noMatchMessage(noMatchQuery));
   await expect(page.locator('#task-list li:visible')).toHaveCount(0);
 
   // Nothing was created or removed: the underlying list still holds both tasks.
@@ -132,7 +137,7 @@ test('BOUNDARY: the filter keeps an extreme 500-character query and treats white
   await search.fill(longQuery);
   await expect(search).toHaveValue(longQuery);
   await expect(emptyMsg).toBeVisible();
-  await expect(emptyMsg).toHaveText(NO_MATCH_MESSAGE);
+  await expect(emptyMsg).toHaveText(noMatchMessage(longQuery));
   await expect(page.locator('#task-list li:visible')).toHaveCount(0);
 
   // Rule 2: the filter trims whitespace (search.value.trim()), so spaces alone mean "no query":
@@ -142,6 +147,8 @@ test('BOUNDARY: the filter keeps an extreme 500-character query and treats white
   await expect(search).toHaveValue(spacesOnly);
   await expect(page.locator('#task-list li:visible')).toHaveCount(2);
   await expect(emptyMsg).toBeHidden();
+  // The message text itself is built from the trimmed value, so it carries no spaces.
+  await expect(emptyMsg).toHaveText(noMatchMessage(''));
 
   // Rule 3: matching is case-insensitive (toLowerCase() on both sides).
   await search.fill('SHIFT');
@@ -172,7 +179,9 @@ test('SECURITY: unsafe markup typed into the filter stays inert plain text and n
   await expect(page.locator('#task-list script')).toHaveCount(0);
   await expect(page.locator('script', { hasText: 'alert(1)' })).toHaveCount(0);
   await expect(emptyMsg).toBeVisible();
-  await expect(emptyMsg).toHaveText(NO_MATCH_MESSAGE);
+  // The message echoes the payload, but as textContent only -- no element is created.
+  await expect(emptyMsg).toHaveText(noMatchMessage(payload));
+  await expect(emptyMsg.locator('script')).toHaveCount(0);
   expect(dialogMessage).toBeNull();
 
   await scanA11y(page);
@@ -201,6 +210,39 @@ test('STATE: a filtered list stays filtered after sorting and shows every task a
   // After sorting A-Z, 'Approve...' comes before 'Publish...'.
   await expect(page.locator('#task-list li').first()).toHaveAttribute('data-task', TASK_TIMEOFF);
   await expect(page.locator('#task-list li').last()).toHaveAttribute('data-task', TASK_SHIFTS);
+
+  await scanA11y(page);
+  if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
+});
+
+test('POSITIVE: the Clear filter button empties the filter box and brings every task back', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = trackErrors(page);
+
+  const noMatchQuery = `no-such-task-${Date.now()}`;
+
+  await openDashboard(page);
+  const search = page.locator('#task-search');
+  const emptyMsg = page.locator('#task-search-empty');
+  const clearFilter = page.getByRole('button', { name: 'Clear filter' });
+
+  await expect(clearFilter).toBeVisible();
+
+  // Filter down to nothing, so the message is showing and echoing the typed text.
+  await search.fill(noMatchQuery);
+  await expect(page.locator('#task-list li:visible')).toHaveCount(0);
+  await expect(emptyMsg).toBeVisible();
+  await expect(emptyMsg).toHaveText(noMatchMessage(noMatchQuery));
+
+  // The dashboard's own 'Clear filter' button resets the box and the whole list.
+  await clearFilter.click();
+  await expect(search).toHaveValue('');
+  await expect(emptyMsg).toBeHidden();
+  await expect(taskRow(page, TASK_SHIFTS)).toBeVisible();
+  await expect(taskRow(page, TASK_TIMEOFF)).toBeVisible();
+  await expect(page.locator('#task-list li:visible')).toHaveCount(2);
+  // The button moves focus back into the filter box so typing can continue.
+  await expect(search).toBeFocused();
 
   await scanA11y(page);
   if (consoleErrors.length) test.info().annotations.push({ type: 'console-errors', description: consoleErrors.slice(0, 5).join(' | ') });
