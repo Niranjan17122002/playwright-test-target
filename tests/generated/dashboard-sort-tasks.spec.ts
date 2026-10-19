@@ -6,7 +6,8 @@ import AxeBuilder from '@axe-core/playwright';
 // No login credentials are available for this journey, so each test that needs the
 // dashboard simply establishes that same real signed-in state before navigating.
 
-const SORT_BUTTON = /Sort A.Z/; // real label is 'Sort A–Z'
+const SORT_BUTTON = /Sort by name/; // real label is 'Sort by name'
+const SORT_DESC_BUTTON = /Sort Z.A/; // real label is 'Sort Z–A'
 
 function trackErrors(page: Page): string[] {
   const consoleErrors: string[] = [];
@@ -100,8 +101,56 @@ test('POSITIVE: Sort A–Z reorders the dashboard task list alphabetically', asy
     - heading "Dashboard"
     - textbox "Task name"
     - button "Create Task"
-    - button "Sort A–Z"
+    - button "Sort by name"
+    - button "Sort Z–A"
   `);
+
+  await runAxe(page);
+  reportConsoleErrors(consoleErrors);
+});
+
+test('POSITIVE: Sort Z–A reorders the dashboard task list in reverse alphabetical order', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = trackErrors(page);
+
+  await openDashboard(page);
+
+  const nameInput = page.getByRole('textbox', { name: 'Task name' });
+  const createBtn = page.getByRole('button', { name: 'Create Task' });
+
+  const ts = Date.now();
+  const first = `AAA ${ts} archive rosters`;
+  const last = `ZZZ ${ts} close timesheets`;
+  test.info().annotations.push({ type: 'test-data', description: `taskA: ${first}` });
+  test.info().annotations.push({ type: 'test-data', description: `taskB: ${last}` });
+
+  // Add the two tasks in alphabetical order (A… then Z…) so the reverse click has to change them.
+  await nameInput.fill(first);
+  await createBtn.click();
+  await expect(page.locator('#task-list > li').filter({ hasText: first })).toHaveCount(1);
+
+  await nameInput.fill(last);
+  await createBtn.click();
+  await expect(page.locator('#task-list > li').filter({ hasText: last })).toHaveCount(1);
+
+  const before = await taskTexts(page);
+  expect(before).toContain(first);
+  expect(before).toContain(last);
+
+  // The new button under test.
+  await page.getByRole('button', { name: SORT_DESC_BUTTON }).click();
+
+  const after = await taskTexts(page);
+  const expected = [...after].sort((a, b) => b.localeCompare(a));
+  // The visible list is genuinely reordered in reverse alphabetical order.
+  expect(after).toEqual(expected);
+  // …and the order really changed (it was not already in that order).
+  expect(after).not.toEqual(before);
+  expect(after[0]).toBe(last);
+  expect(after[after.length - 1]).toBe(first);
+
+  // The first rendered row is the alphabetically-last task.
+  await expect(page.locator('#task-list > li').first().locator('span')).toHaveText(last);
 
   await runAxe(page);
   reportConsoleErrors(consoleErrors);
