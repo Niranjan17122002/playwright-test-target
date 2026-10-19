@@ -167,7 +167,7 @@ test('NEGATIVE: submitting Create Task with no task name is blocked and saves no
   const createBtn = page.getByRole('button', { name: 'Create Task' });
 
   const beforeCount = await items.count();
-  await expect(page.locator('#task-count')).toHaveText(new RegExp(`^${beforeCount} tasks?$`));
+  await expect(page.locator('#task-count')).toHaveText(new RegExp(`^${beforeCount} tasks? on your list$`));
 
   // Attempt the page's own form action with the mandatory field missing.
   await nameInput.fill('');
@@ -175,7 +175,7 @@ test('NEGATIVE: submitting Create Task with no task name is blocked and saves no
 
   // Nothing was saved: no new row, the same count, the form still open.
   await expect(items).toHaveCount(beforeCount);
-  await expect(page.locator('#task-count')).toHaveText(new RegExp(`^${beforeCount} tasks?$`));
+  await expect(page.locator('#task-count')).toHaveText(new RegExp(`^${beforeCount} tasks? on your list$`));
   await expect(nameInput).toBeVisible();
 
   // The rejection is real: the field is invalid and reports the missing-value rule.
@@ -342,14 +342,14 @@ test('STATE: sorting an empty task list leaves it empty and shows the empty stat
   // The page's own empty-state message (word for word from dashboard/index.html).
   await expect(page.locator('#task-empty-message')).toBeVisible();
   await expect(page.locator('#task-empty-message')).toHaveText('No tasks yet.');
-  await expect(page.locator('#task-count')).toHaveText('0 tasks');
+  await expect(page.locator('#task-count')).toHaveText(/^0 tasks? on your list$/);
 
   // Sorting an empty list is a safe no-op: still empty, no error, message stays.
   await page.getByRole('button', { name: SORT_BUTTON }).click();
 
   await expect(items).toHaveCount(0);
   await expect(page.locator('#task-empty-message')).toBeVisible();
-  await expect(page.locator('#task-count')).toHaveText('0 tasks');
+  await expect(page.locator('#task-count')).toHaveText(/^0 tasks? on your list$/);
 
   await runAxe(page);
   reportConsoleErrors(consoleErrors);
