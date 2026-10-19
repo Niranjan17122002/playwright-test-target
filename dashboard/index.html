@@ -35,7 +35,8 @@
         <button type="button" class="delete-task-btn" aria-label="Delete task">Delete</button>
       </li>
     </ul>
-    <p id="task-count" class="message"></p>
+    <p id="task-count" class="message" style="display:block;"></p>
+    <button type="button" id="clear-all-tasks">Clear all tasks</button>
     <p id="task-empty-message" class="message" style="display:none;">No tasks yet.</p>
     <p><a href="#" id="logout-link">Log out</a></p>
   </main>
@@ -53,7 +54,7 @@
       function updateEmptyState() {
         emptyMsg.style.display = list.children.length === 0 ? 'block' : 'none';
         var n = list.children.length;
-        document.getElementById('task-count').textContent = n + (n === 1 ? ' task' : ' tasks');
+        document.getElementById('task-count').textContent = n + (n === 1 ? ' task' : ' tasks') + ' on your list';
       }
 
       function addDeleteHandler(li) {
@@ -89,6 +90,12 @@
           return (a.getAttribute('data-task') || '').localeCompare(b.getAttribute('data-task') || '');
         });
         items.forEach(function (li) { list.appendChild(li); });
+      });
+
+      document.getElementById('clear-all-tasks').addEventListener('click', function () {
+        if (!window.confirm('Remove every task from the list?')) return;
+        list.innerHTML = '';
+        updateEmptyState();
       });
 
       var search = document.getElementById('task-search');
