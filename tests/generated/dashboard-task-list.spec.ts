@@ -69,7 +69,9 @@ test('POSITIVE: Dashboard shows the seeded task list and the correct task count'
 
   await expect(page.getByRole('main')).toMatchAriaSnapshot(`
   - heading "Dashboard" [level=1]
-  - paragraph: 2 tasks
+  - list:
+    - listitem
+    - listitem
 `);
 
   await reportDiagnostics(page, consoleErrors);
