@@ -101,6 +101,7 @@ test.describe('Dashboard task creation', () => {
       - button "Create Task"
       - text: Filter tasks
       - searchbox "Filter tasks"
+      - button "Clear filter"
       - button "Sort A–Z"
       - list:
         - listitem:
