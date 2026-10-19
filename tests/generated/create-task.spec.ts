@@ -80,7 +80,7 @@ test.describe('Dashboard task creation', () => {
 
     // Baseline: the dashboard ships with two seeded tasks.
     await expect(list.locator('li')).toHaveCount(2);
-    await expect(taskCount).toHaveText('2 tasks');
+    await expect(taskCount).toHaveText('2 tasks on your list');
 
     await input.fill(taskName);
     await createButton.click();
@@ -88,7 +88,7 @@ test.describe('Dashboard task creation', () => {
     // The new item is really in the list: appended at the bottom, with the typed text.
     await expect(list.locator('li')).toHaveCount(3);
     await expect(list.locator('li').last().locator('span')).toHaveText(taskName);
-    await expect(taskCount).toHaveText('3 tasks');
+    await expect(taskCount).toHaveText('3 tasks on your list');
     await expect(page.locator('#task-empty-message')).toBeHidden();
     await expect(input).toHaveValue('');
 
@@ -112,6 +112,8 @@ test.describe('Dashboard task creation', () => {
         - listitem:
           - text: ${taskName}
           - button "Delete task"
+      - paragraph: 3 tasks on your list
+      - button "Clear all tasks"
       - paragraph:
         - link "Log out":
           - /url: "#"
@@ -143,7 +145,7 @@ test.describe('Dashboard task creation', () => {
 
     // The handler trims the value and returns early: nothing is appended, no error shown.
     await expect(list.locator('li')).toHaveCount(2);
-    await expect(taskCount).toHaveText('2 tasks');
+    await expect(taskCount).toHaveText('2 tasks on your list');
     await expect(input).toHaveValue('   ');
     await expect(page.locator('#task-empty-message')).toBeHidden();
     await expect(page.locator('.message.error')).toHaveCount(0);
@@ -184,7 +186,7 @@ test.describe('Dashboard task creation', () => {
       expect(message.length).toBeGreaterThan(0);
 
       await expect(list.locator('li')).toHaveCount(2);
-      await expect(taskCount).toHaveText('2 tasks');
+      await expect(taskCount).toHaveText('2 tasks on your list');
     }
 
     await finish(page, consoleErrors);
@@ -210,7 +212,7 @@ test.describe('Dashboard task creation', () => {
     await createButton.click();
     await expect(list.locator('li')).toHaveCount(3);
     await expect(list.locator('li').last().locator('span')).toHaveText('Q');
-    await expect(taskCount).toHaveText('3 tasks');
+    await expect(taskCount).toHaveText('3 tasks on your list');
 
     // No upper limit exists: a 209-character name is accepted in full, not cut.
     const longName = `Boundary ${'x'.repeat(200)}`;
@@ -219,7 +221,7 @@ test.describe('Dashboard task creation', () => {
     await createButton.click();
     await expect(list.locator('li')).toHaveCount(4);
     await expect(list.locator('li').last().locator('span')).toHaveText(longName);
-    await expect(taskCount).toHaveText('4 tasks');
+    await expect(taskCount).toHaveText('4 tasks on your list');
 
     // One step past the 'no rule' edge that DOES exist: surrounding whitespace is trimmed
     // on save (the handler stores input.value.trim()).
@@ -228,7 +230,7 @@ test.describe('Dashboard task creation', () => {
     await createButton.click();
     await expect(list.locator('li')).toHaveCount(5);
     await expect(list.locator('li').last().locator('span')).toHaveText(paddedName.trim());
-    await expect(taskCount).toHaveText('5 tasks');
+    await expect(taskCount).toHaveText('5 tasks on your list');
 
     await finish(page, consoleErrors);
   });
@@ -260,7 +262,7 @@ test.describe('Dashboard task creation', () => {
     await expect(page.locator('#task-list script')).toHaveCount(0);
     expect(dialogs).toEqual([]);
     expect(await page.evaluate(() => (window as unknown as { __xssRan?: boolean }).__xssRan === true)).toBe(false);
-    await expect(taskCount).toHaveText('3 tasks');
+    await expect(taskCount).toHaveText('3 tasks on your list');
 
     await finish(page, consoleErrors);
   });
@@ -290,7 +292,7 @@ test.describe('Dashboard task creation', () => {
     // Real empty state of this list (message text taken from the page's own markup).
     await expect(emptyMessage).toBeVisible();
     await expect(emptyMessage).toHaveText('No tasks yet.');
-    await expect(taskCount).toHaveText('0 tasks');
+    await expect(taskCount).toHaveText('0 tasks on your list');
 
     // Creating a task from the empty state brings the list (and singular counter) back.
     const firstTaskName = `First task ${Date.now()}`;
@@ -300,8 +302,47 @@ test.describe('Dashboard task creation', () => {
 
     await expect(list.locator('li')).toHaveCount(1);
     await expect(list.locator('li').last().locator('span')).toHaveText(firstTaskName);
-    await expect(taskCount).toHaveText('1 task');
+    await expect(taskCount).toHaveText('1 task on your list');
     await expect(emptyMessage).toBeHidden();
+
+    await finish(page, consoleErrors);
+  });
+
+  test('STATE: the Clear all tasks button empties the list only after confirmation', async ({ page }) => {
+    test.setTimeout(120000);
+    const consoleErrors = watchPage(page);
+
+    await openDashboard(page);
+
+    const list = page.locator('#task-list');
+    const taskCount = page.locator('#task-count');
+    const emptyMessage = page.locator('#task-empty-message');
+    const clearAllButton = page.getByRole('button', { name: 'Clear all tasks' });
+    const input = page.getByRole('textbox', { name: 'Task name' });
+    const createButton = page.getByRole('button', { name: 'Create Task' });
+
+    // Start from the two seeded rows plus one task created through the form of this journey.
+    const taskName = `Clear me ${Date.now()}`;
+    test.info().annotations.push({ type: 'test-data', description: `taskName: ${taskName}` });
+    await input.fill(taskName);
+    await createButton.click();
+    await expect(list.locator('li')).toHaveCount(3);
+    await expect(taskCount).toHaveText('3 tasks on your list');
+
+    // Dismissing the window.confirm() prompt leaves every task in place.
+    page.once('dialog', (dialog) => dialog.dismiss());
+    await clearAllButton.click();
+    await expect(list.locator('li')).toHaveCount(3);
+    await expect(taskCount).toHaveText('3 tasks on your list');
+    await expect(emptyMessage).toBeHidden();
+
+    // Accepting it wipes the list and re-renders the counter / empty state.
+    page.once('dialog', (dialog) => dialog.accept());
+    await clearAllButton.click();
+    await expect(list.locator('li')).toHaveCount(0);
+    await expect(emptyMessage).toBeVisible();
+    await expect(emptyMessage).toHaveText('No tasks yet.');
+    await expect(taskCount).toHaveText('0 tasks on your list');
 
     await finish(page, consoleErrors);
   });
