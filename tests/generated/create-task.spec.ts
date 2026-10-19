@@ -94,10 +94,27 @@ test.describe('Dashboard task creation', () => {
 
     // One short ARIA check of the result area (never an empty template).
     await expect(page.getByRole('main')).toMatchAriaSnapshot(`
-      - heading "Dashboard"
-      - textbox "Task name"
+      - heading "Dashboard" [level=1]
+      - text: Task name
+      - textbox "Task name":
+        - /placeholder: e.g. Review roster
       - button "Create Task"
-      - paragraph: /3 tasks/
+      - text: Filter tasks
+      - searchbox "Filter tasks"
+      - button "Sort A–Z"
+      - list:
+        - listitem:
+          - text: Publish next week's shifts
+          - button "Delete task"
+        - listitem:
+          - text: Approve pending time-off requests
+          - button "Delete task"
+        - listitem:
+          - text: ${taskName}
+          - button "Delete task"
+      - paragraph:
+        - link "Log out":
+          - /url: "#"
     `);
 
     // The task list is client-side only (no server round-trip), so the list above is the
