@@ -23,7 +23,8 @@
     </form>
     <label for="task-search">Filter tasks</label>
     <input type="search" id="task-search" name="task-search" placeholder="Type to filter the list" />
-    <p id="task-search-empty" class="message" style="display:none;">No task matches your search.</p>
+    <button type="button" id="clear-filter">Clear filter</button>
+    <p id="task-search-empty" class="message" style="display:none;"></p>
     <button type="button" id="sort-tasks">Sort A–Z</button>
     <ul id="task-list" class="list">
       <li class="list-item" data-task="Publish next week's shifts">
@@ -108,7 +109,14 @@
           li.style.display = match ? '' : 'none';
           if (match) shown++;
         });
+        searchEmpty.textContent = 'No tasks match "' + search.value.trim() + '".';
         searchEmpty.style.display = q && shown === 0 && list.children.length > 0 ? 'block' : 'none';
+      });
+
+      document.getElementById('clear-filter').addEventListener('click', function () {
+        search.value = '';
+        search.dispatchEvent(new Event('input'));
+        search.focus();
       });
 
       document.getElementById('logout-link').addEventListener('click', function (e) {
