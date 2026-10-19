@@ -25,7 +25,8 @@
     <input type="search" id="task-search" name="task-search" placeholder="Type to filter the list" />
     <button type="button" id="clear-filter">Clear filter</button>
     <p id="task-search-empty" class="message" style="display:none;"></p>
-    <button type="button" id="sort-tasks">Sort A–Z</button>
+    <button type="button" id="sort-tasks">Sort by name</button>
+    <button type="button" id="sort-tasks-reverse">Sort Z–A</button>
     <ul id="task-list" class="list">
       <li class="list-item" data-task="Publish next week's shifts">
         <span>Publish next week's shifts</span>
@@ -89,6 +90,14 @@
         var items = Array.prototype.slice.call(list.children);
         items.sort(function (a, b) {
           return (a.getAttribute('data-task') || '').localeCompare(b.getAttribute('data-task') || '');
+        });
+        items.forEach(function (li) { list.appendChild(li); });
+      });
+
+      document.getElementById('sort-tasks-reverse').addEventListener('click', function () {
+        var items = Array.prototype.slice.call(list.children);
+        items.sort(function (a, b) {
+          return (b.getAttribute('data-task') || '').localeCompare(a.getAttribute('data-task') || '');
         });
         items.forEach(function (li) { list.appendChild(li); });
       });
