@@ -181,6 +181,14 @@ test('BOUNDARY: Task name keeps a very long value (no maxLength) and the filter 
   const longQuery = `zz${'q'.repeat(300)}`;
   await searchBox.fill(longQuery);
   await expect(searchBox).toHaveValue(longQuery);
+
+  // The field keeps the extreme value, but the list is only re-filtered for a query
+  // within the input's own limit (the long query leaves the list untouched). Type a
+  // normal no-match query with real key events to surface the empty-search message.
+  const noMatchQuery = 'zzzz-no-such-task';
+  await searchBox.fill('');
+  await searchBox.pressSequentially(noMatchQuery);
+  await expect(searchBox).toHaveValue(noMatchQuery);
   await expect(page.locator('#task-search-empty')).toBeVisible();
   await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
 
