@@ -184,13 +184,14 @@ test('BOUNDARY: Task name keeps a very long value (no maxLength) and the filter 
 
   // The field keeps the extreme value, but the list is only re-filtered for a query
   // within the input's own limit (the long query leaves the list untouched). Type a
-  // normal no-match query with real key events to surface the empty-search message.
+  // normal no-match query with real key events to surface the empty-search message,
+  // which now quotes back the text that was typed.
   const noMatchQuery = 'zzzz-no-such-task';
   await searchBox.fill('');
   await searchBox.pressSequentially(noMatchQuery);
   await expect(searchBox).toHaveValue(noMatchQuery);
   await expect(page.locator('#task-search-empty')).toBeVisible();
-  await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
+  await expect(page.locator('#task-search-empty')).toHaveText('No tasks match "zzzz-no-such-task".');
 
   await reportDiagnostics(page, consoleErrors);
 });
@@ -242,10 +243,10 @@ test('STATE: Dashboard shows its real empty states when the filter matches nothi
   await openDashboard(page);
   await expect(page.locator('#task-list li')).toHaveCount(2);
 
-  // Real empty-search state (dashboard/index.html renders this exact wording)
+  // Real empty-search state (dashboard/index.html quotes back the trimmed query)
   await page.getByRole('searchbox', { name: 'Filter tasks' }).fill('zzzz-no-such-task');
   await expect(page.locator('#task-search-empty')).toBeVisible();
-  await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
+  await expect(page.locator('#task-search-empty')).toHaveText('No tasks match "zzzz-no-such-task".');
   await page.getByRole('searchbox', { name: 'Filter tasks' }).fill('');
   await expect(page.locator('#task-search-empty')).toBeHidden();
 
@@ -261,6 +262,39 @@ test('STATE: Dashboard shows its real empty states when the filter matches nothi
   await expect(page.locator('#task-empty-message')).toBeVisible();
   await expect(page.locator('#task-empty-message')).toHaveText('No tasks yet.');
   await expect(page.locator('#task-count')).toHaveText('0 tasks on your list');
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('STATE: Clear filter empties the Search box and restores the full task list', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = collectErrors(page);
+
+  await openDashboard(page);
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+
+  const searchBox = page.getByRole('searchbox', { name: 'Filter tasks' });
+  const clearFilterButton = page.getByRole('button', { name: 'Clear filter' });
+  await expect(clearFilterButton).toBeVisible();
+
+  // A no-match query hides both seeded tasks and echoes the typed text in the message
+  await searchBox.fill('zzzz-no-such-task');
+  await expect(page.locator('#task-search-empty')).toBeVisible();
+  await expect(page.locator('#task-search-empty')).toHaveText('No tasks match "zzzz-no-such-task".');
+  await expect(page.getByRole('listitem').filter({ hasText: "Publish next week's shifts" })).toBeHidden();
+  await expect(page.getByRole('listitem').filter({ hasText: 'Approve pending time-off requests' })).toBeHidden();
+
+  // Source: #clear-filter resets the search value, re-dispatches 'input' and refocuses the box
+  await clearFilterButton.click();
+  await expect(searchBox).toHaveValue('');
+  await expect(searchBox).toBeFocused();
+  await expect(page.locator('#task-search-empty')).toBeHidden();
+
+  // Every task is visible again and the count is untouched (filtering never deletes)
+  await expect(page.getByRole('listitem').filter({ hasText: "Publish next week's shifts" })).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: 'Approve pending time-off requests' })).toBeVisible();
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
 
   await reportDiagnostics(page, consoleErrors);
 });
