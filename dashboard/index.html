@@ -71,6 +71,17 @@
         var input = document.getElementById('task-title');
         var title = input.value.trim();
         if (!title) return;
+        // Live check (reverted after): a valid task is refused with a generic error.
+        var err = document.getElementById('task-create-error');
+        if (!err) {
+          err = document.createElement('p');
+          err.id = 'task-create-error';
+          err.className = 'message error';
+          err.setAttribute('role', 'alert');
+          document.getElementById('add-task-form').after(err);
+        }
+        err.textContent = 'Something went wrong! Try again later.';
+        return;
 
         var li = document.createElement('li');
         li.className = 'list-item';
