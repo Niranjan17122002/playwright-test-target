@@ -314,7 +314,7 @@ test('POSITIVE: the Filter tasks box filters the task list and reports when noth
   await searchInput.fill('no-task-matches-this');
   await expect(createdItem).toBeHidden();
   await expect(page.locator('#task-search-empty')).toBeVisible();
-  await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
+  await expect(page.locator('#task-search-empty')).toHaveText('No tasks match "no-task-matches-this".');
 
   // Clearing the box restores the full list and hides the message again.
   await searchInput.fill('');
