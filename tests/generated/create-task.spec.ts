@@ -15,7 +15,8 @@ test.use({ storageState: { cookies: [], origins: [] } });
  * to #task-list, clears the input and hides/shows #task-empty-message ("No tasks yet.").
  * A #task-search box (label "Filter tasks") filters the list on input and shows
  * #task-search-empty ("No task matches your search.") when nothing matches.
- * A #sort-tasks button ("Sort A–Z") reorders the list alphabetically by data-task.
+ * A #sort-tasks button ("Sort by name") reorders the list alphabetically by data-task, and a
+ * #sort-tasks-reverse button ("Sort Z–A") reorders it in reverse alphabetical order.
  * The list is DOM-only -- there is no data request and no paging control, so no request is
  * faked or delayed anywhere in this file.
  */
@@ -323,7 +324,7 @@ test('POSITIVE: the Filter tasks box filters the task list and reports when noth
   await reportDiagnostics(page, consoleErrors);
 });
 
-test('POSITIVE: the Sort A–Z button reorders the task list alphabetically', async ({ page }) => {
+test('POSITIVE: the Sort by name button reorders the task list alphabetically', async ({ page }) => {
   test.setTimeout(120000);
   const consoleErrors = trackConsoleErrors(page);
 
@@ -337,7 +338,7 @@ test('POSITIVE: the Sort A–Z button reorders the task list alphabetically', as
   await page.getByRole('button', { name: 'Create Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(3);
 
-  const sortButton = page.getByRole('button', { name: /Sort A.Z/ });
+  const sortButton = page.getByRole('button', { name: /Sort by name/ });
   await expect(sortButton).toBeVisible();
   await sortButton.click();
 
@@ -348,6 +349,39 @@ test('POSITIVE: the Sort A–Z button reorders the task list alphabetically', as
   const expected = [...afterSort].sort((a, b) => a.localeCompare(b));
   expect(afterSort).toEqual(expected);
   await expect(page.locator('#task-list li')).toHaveCount(3);
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('POSITIVE: the Sort Z–A button reorders the task list in reverse alphabetical order', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = trackConsoleErrors(page);
+
+  await loginAsUser(page);
+  await openDashboard(page);
+
+  // The two seeded tasks are present; add one of our own so the sort spans both.
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+  const titleInput = page.getByRole('textbox', { name: 'Task name' });
+  await titleInput.fill(`AAA Sortable ${Date.now()}`);
+  await page.getByRole('button', { name: 'Create Task' }).click();
+  await expect(page.locator('#task-list li')).toHaveCount(3);
+
+  const reverseButton = page.getByRole('button', { name: /Sort Z.A/ });
+  await expect(reverseButton).toBeVisible();
+  await reverseButton.click();
+
+  // After sorting, the data-task values are in descending alphabetical order and the count is unchanged.
+  const afterSort = await page.locator('#task-list li').evaluateAll(
+    (items) => items.map((li) => li.getAttribute('data-task') || '')
+  );
+  const expected = [...afterSort].sort((a, b) => b.localeCompare(a));
+  expect(afterSort).toEqual(expected);
+  await expect(page.locator('#task-list li')).toHaveCount(3);
+
+  // The task we just added sorts last in reverse order, proving the list really was reversed.
+  await expect(page.locator('#task-list li').first()).toHaveAttribute('data-task', "Publish next week's shifts");
+  await expect(page.locator('#task-list li').last()).toHaveAttribute('data-task', /^AAA Sortable /);
 
   await reportDiagnostics(page, consoleErrors);
 });
