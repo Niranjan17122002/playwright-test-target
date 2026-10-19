@@ -117,12 +117,15 @@ test('NEGATIVE: a filter term matching no task shows the no-results message inst
   await expect(noResultsMessage(page)).toBeVisible({ timeout: 10000 });
   await expect(items.filter({ hasText: TASK_ONE })).toBeHidden();
   await expect(items.filter({ hasText: TASK_TWO })).toBeHidden();
-  await expect(items).toHaveCount(2);
+  // The app removes filtered-out tasks from the rendered list; nothing is lost,
+  // so the stored task count stays at 2 and both come back after clearing.
+  await expect(items).toHaveCount(0);
   await expect(page.getByText('2 tasks on your list')).toBeVisible();
 
   // Clear filter recovers from the empty result set.
   await clearFilterButton(page).click();
   await expect(search).toHaveValue('');
+  await expect(items).toHaveCount(2);
   await expect(items.filter({ hasText: TASK_ONE })).toBeVisible();
   await expect(items.filter({ hasText: TASK_TWO })).toBeVisible();
   await expect(noResultsMessage(page)).toBeHidden();
@@ -228,10 +231,11 @@ test('SECURITY: script markup typed into the filter stays inert plain text', asy
   expect(dialogFired).toBe(false);
   expect(await page.locator('script:has-text("alert(1)")').count()).toBe(0);
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
-  await expect(items).toHaveCount(2);
+  await expect(page.getByText('2 tasks on your list')).toBeVisible();
 
   await clearFilterButton(page).click();
   await expect(search).toHaveValue('');
+  await expect(items).toHaveCount(2);
   await expect(items.filter({ hasText: TASK_ONE })).toBeVisible();
   await expect(items.filter({ hasText: TASK_TWO })).toBeVisible();
 
