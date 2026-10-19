@@ -77,7 +77,7 @@ test('POSITIVE: searching the dashboard filters the task list to matching tasks'
   await reportDiagnostics(page, consoleErrors);
 });
 
-test('POSITIVE: the Sort A–Z button reorders the task list alphabetically by task name', async ({ page }) => {
+test('POSITIVE: the Sort by name button reorders the task list alphabetically by task name', async ({ page }) => {
   test.setTimeout(120000);
   const consoleErrors = attachDiagnostics(page);
 
@@ -89,11 +89,37 @@ test('POSITIVE: the Sort A–Z button reorders the task list alphabetically by t
   await expect(listItems.first()).toHaveAttribute('data-task', "Publish next week's shifts");
   await expect(listItems.nth(1)).toHaveAttribute('data-task', 'Approve pending time-off requests');
 
+  // The renamed button still carries the same id and is labelled "Sort by name".
+  await expect(page.getByRole('button', { name: 'Sort by name' })).toBeVisible();
   await page.locator('#sort-tasks').click();
 
-  // Sorting A–Z moves "Approve pending time-off requests" ahead of "Publish next week's shifts".
+  // Sorting by name moves "Approve pending time-off requests" ahead of "Publish next week's shifts".
   await expect(listItems.first()).toHaveAttribute('data-task', 'Approve pending time-off requests');
   await expect(listItems.nth(1)).toHaveAttribute('data-task', "Publish next week's shifts");
+  await expect(listItems).toHaveCount(2);
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('POSITIVE: the Sort Z–A button reorders the task list in reverse alphabetical order', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = attachDiagnostics(page);
+
+  await openDashboard(page);
+
+  const listItems = page.locator('#task-list li');
+
+  // Sort by name first, so the reverse sort has a visible effect on the order.
+  await page.locator('#sort-tasks').click();
+  await expect(listItems.first()).toHaveAttribute('data-task', 'Approve pending time-off requests');
+  await expect(listItems.nth(1)).toHaveAttribute('data-task', "Publish next week's shifts");
+
+  await expect(page.getByRole('button', { name: 'Sort Z–A' })).toBeVisible();
+  await page.locator('#sort-tasks-reverse').click();
+
+  // Z–A moves "Publish next week's shifts" ahead of "Approve pending time-off requests".
+  await expect(listItems.first()).toHaveAttribute('data-task', "Publish next week's shifts");
+  await expect(listItems.nth(1)).toHaveAttribute('data-task', 'Approve pending time-off requests');
   await expect(listItems).toHaveCount(2);
 
   await reportDiagnostics(page, consoleErrors);
