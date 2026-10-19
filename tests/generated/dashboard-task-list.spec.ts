@@ -62,7 +62,7 @@ test('POSITIVE: Dashboard shows the seeded task list and the correct task count'
   await expect(page.locator('#task-list li')).toHaveCount(2);
 
   // The live task count message below the list matches the number of tasks
-  await expect(page.locator('#task-count')).toHaveText('2 tasks');
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
 
   // The empty-state message must not be showing while tasks exist
   await expect(page.locator('#task-empty-message')).toBeHidden();
@@ -105,7 +105,7 @@ test('NEGATIVE: Creating a task with an empty name is rejected and the task list
   // Nothing was saved: still the same two tasks and the same count
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
   await expect(page.locator('#task-list li')).toHaveCount(2);
-  await expect(page.locator('#task-count')).toHaveText('2 tasks');
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
   await expect(page.getByRole('listitem').filter({ hasText: 'Approve pending time-off requests' })).toBeVisible();
 
   await reportDiagnostics(page, consoleErrors);
@@ -138,7 +138,7 @@ test('VALIDATION: Every required field on the Dashboard task form blocks submiss
 
     // Nothing was created while this required field was empty
     await expect(page.locator('#task-list li')).toHaveCount(2);
-    await expect(page.locator('#task-count')).toHaveText('2 tasks');
+    await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
 
     // refill with a valid value so the next iteration only tests the next field
     await field.fill('Valid placeholder value');
@@ -149,7 +149,7 @@ test('VALIDATION: Every required field on the Dashboard task form blocks submiss
   await page.getByRole('textbox', { name: 'Task name' }).fill('   ');
   await page.getByRole('button', { name: 'Create Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(2);
-  await expect(page.locator('#task-count')).toHaveText('2 tasks');
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
 
   await reportDiagnostics(page, consoleErrors);
 });
@@ -170,7 +170,7 @@ test('BOUNDARY: Task name keeps a very long value (no maxLength) and the filter 
   await page.getByRole('button', { name: 'Create Task' }).click();
 
   // Observed behaviour: accepted, value not truncated, count grows to 3
-  await expect(page.locator('#task-count')).toHaveText('3 tasks');
+  await expect(page.locator('#task-count')).toHaveText('3 tasks on your list');
   const longRow = page.locator('#task-list li').filter({ hasText: 'Boundary AAAAAAAAAA' });
   await expect(longRow).toHaveCount(1);
   await expect(longRow.locator('span')).toHaveText(longTitle);
@@ -228,7 +228,7 @@ test.describe('Dashboard requires a signed-in session', () => {
     const injectedRow = page.locator('#task-list li').filter({ hasText: payload });
     await expect(injectedRow).toHaveCount(1);
     await expect(injectedRow.locator('span')).toHaveText(payload);
-    await expect(page.locator('#task-count')).toHaveText('3 tasks');
+    await expect(page.locator('#task-count')).toHaveText('3 tasks on your list');
     expect(dialogFired).toBe(false);
 
     await reportDiagnostics(page, consoleErrors);
@@ -254,13 +254,51 @@ test('STATE: Dashboard shows its real empty states when the filter matches nothi
   await expect(deleteButtons).toHaveCount(2);
   await deleteButtons.filter({ visible: true }).first().click();
   await expect(deleteButtons).toHaveCount(1);
-  await expect(page.locator('#task-count')).toHaveText('1 task');
+  await expect(page.locator('#task-count')).toHaveText('1 task on your list');
   await deleteButtons.filter({ visible: true }).first().click();
   await expect(deleteButtons).toHaveCount(0);
 
   await expect(page.locator('#task-empty-message')).toBeVisible();
   await expect(page.locator('#task-empty-message')).toHaveText('No tasks yet.');
-  await expect(page.locator('#task-count')).toHaveText('0 tasks');
+  await expect(page.locator('#task-count')).toHaveText('0 tasks on your list');
+
+  await reportDiagnostics(page, consoleErrors);
+});
+
+test('STATE: Clear all tasks empties the list only when the confirmation is accepted', async ({ page }) => {
+  test.setTimeout(120000);
+  const consoleErrors = collectErrors(page);
+
+  await openDashboard(page);
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
+
+  const clearAllButton = page.getByRole('button', { name: 'Clear all tasks' });
+  await expect(clearAllButton).toBeVisible();
+
+  // Dismissing the page's own confirm prompt leaves every task in place
+  // (source: window.confirm('Remove every task from the list?') -> early return)
+  let confirmMessage = '';
+  page.once('dialog', async dialog => {
+    confirmMessage = dialog.message();
+    await dialog.dismiss();
+  });
+  await clearAllButton.click();
+
+  await expect.poll(() => confirmMessage).toBe('Remove every task from the list?');
+  await expect(page.locator('#task-list li')).toHaveCount(2);
+  await expect(page.locator('#task-count')).toHaveText('2 tasks on your list');
+  await expect(page.locator('#task-empty-message')).toBeHidden();
+
+  // Accepting the prompt removes every task at once and refreshes count + empty state
+  page.once('dialog', async dialog => { await dialog.accept(); });
+  await clearAllButton.click();
+
+  await expect(page.locator('#task-list li')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Delete task' })).toHaveCount(0);
+  await expect(page.locator('#task-count')).toHaveText('0 tasks on your list');
+  await expect(page.locator('#task-empty-message')).toBeVisible();
+  await expect(page.locator('#task-empty-message')).toHaveText('No tasks yet.');
 
   await reportDiagnostics(page, consoleErrors);
 });
