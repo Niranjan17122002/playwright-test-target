@@ -15,7 +15,7 @@ async function openDashboard(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
 }
 
-const SEARCH_EMPTY_TEXT = 'No task matches your search.';
+const searchEmptyText = (term: string): string => `No tasks match "${term}".`;
 
 function attachDiagnostics(page: Page): string[] {
   const consoleErrors: string[] = [];
@@ -139,7 +139,7 @@ test('NEGATIVE: a search term with no match shows the empty message and hides al
 
   await search.fill('zzz-no-such-task-xyz');
   await expect(emptyMessage).toBeVisible();
-  await expect(emptyMessage).toHaveText(SEARCH_EMPTY_TEXT);
+  await expect(emptyMessage).toHaveText(searchEmptyText('zzz-no-such-task-xyz'));
 
   // No task matches, so none stays visible, and nothing was added or removed from the list.
   await expect(page.locator('#task-list li:visible')).toHaveCount(0);
@@ -148,7 +148,7 @@ test('NEGATIVE: a search term with no match shows the empty message and hides al
   await expect(page.locator('main')).toMatchAriaSnapshot(`
     - heading "Dashboard"
     - searchbox "Filter tasks"
-    - paragraph: No task matches your search.
+    - paragraph: No tasks match "zzz-no-such-task-xyz".
   `);
 
   // Clearing the term returns to the full, unfiltered list and hides the message again.
@@ -208,7 +208,9 @@ test('SECURITY: an unsafe search string is not executed and leaves the task list
   await expect(search).toHaveValue(payload);
   await expect(page.locator('#task-list script')).toHaveCount(0);
   await expect(page.locator('#task-list li')).toHaveCount(2);
-  await expect(page.getByText('<script>alert(1)</script>')).toHaveCount(0);
+  // The payload is echoed back only as inert text in the message -- never parsed into markup.
+  await expect(page.locator('#task-search-empty script')).toHaveCount(0);
+  await expect(page.locator('#task-search-empty')).toContainText('<script>alert(1)</script>');
   // No task matches the payload, so the empty message shows as normal.
   await expect(page.locator('#task-search-empty')).toBeVisible();
   // Nothing executed while typing or filtering.
