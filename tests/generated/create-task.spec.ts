@@ -10,7 +10,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
  * Evidence (source): the page is gated by
  *   if (localStorage.getItem('ttapp_logged_in') !== '1') -> ../login.html
  * The form is #add-task-form with label "Task name" for #task-title (type=text, REQUIRED,
- * no maxlength/minlength/pattern) and submit button #add-task-submit "Create Task".
+ * no maxlength/minlength/pattern) and submit button #add-task-submit "Add Task".
  * Submitting trims the value, ignores an empty result, appends an <li class="list-item">
  * to #task-list, clears the input and hides/shows #task-empty-message ("No tasks yet.").
  * A #task-search box (label "Filter tasks") filters the list on input and shows
@@ -73,7 +73,7 @@ test('POSITIVE: creating a new task with a valid title adds it to the task list'
   await expect(page.locator('#task-list li')).toHaveCount(2);
 
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
-  const createButton = page.getByRole('button', { name: 'Create Task' });
+  const createButton = page.getByRole('button', { name: 'Add Task' });
   await expect(createButton).toBeEnabled();
 
   await titleInput.fill(taskTitle);
@@ -109,7 +109,7 @@ test('NEGATIVE: submitting the task form with an empty title is rejected and sav
   await openDashboard(page);
 
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
-  const createButton = page.getByRole('button', { name: 'Create Task' });
+  const createButton = page.getByRole('button', { name: 'Add Task' });
 
   await expect(titleInput).toHaveValue('');
   const before = await page.locator('#task-list li').count();
@@ -148,7 +148,7 @@ test('VALIDATION: the required task title blocks submission with its own message
     await expect(field.locator).toHaveValue('');
 
     const before = await page.locator('#task-list li').count();
-    await page.getByRole('button', { name: 'Create Task' }).click();
+    await page.getByRole('button', { name: 'Add Task' }).click();
 
     // The browser's own validation message for this specific required field.
     expect(await field.locator.evaluate((el) => (el as HTMLInputElement).validity.valid)).toBe(false);
@@ -167,7 +167,7 @@ test('VALIDATION: the required task title blocks submission with its own message
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill('   ');
   const beforeWhitespace = await page.locator('#task-list li').count();
-  await page.getByRole('button', { name: 'Create Task' }).click();
+  await page.getByRole('button', { name: 'Add Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(beforeWhitespace);
   await expect(page.locator('#task-list li[data-task=""]')).toHaveCount(0);
 
@@ -185,7 +185,7 @@ test('BOUNDARY: an extremely long task title is accepted and kept in full (no le
   await openDashboard(page);
 
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
-  const createButton = page.getByRole('button', { name: 'Create Task' });
+  const createButton = page.getByRole('button', { name: 'Add Task' });
 
   // Real rule from the source: #task-title only carries `required` -- maxLength -1 means no limit,
   // so the extreme value is the generic one rather than a specific maxlength + 1.
@@ -225,7 +225,7 @@ test('SECURITY: the dashboard requires a session, and script text typed as a tit
   const payload = '<script>alert(1)</script>';
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill(payload);
-  await page.getByRole('button', { name: 'Create Task' }).click();
+  await page.getByRole('button', { name: 'Add Task' }).click();
 
   const injected = page.locator('#task-list li').last();
   await expect(injected.locator('span')).toHaveText(payload);
@@ -296,7 +296,7 @@ test('POSITIVE: the Filter tasks box filters the task list and reports when noth
   // Add a task of our own so we are filtering over something this journey created.
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill(taskTitle);
-  await page.getByRole('button', { name: 'Create Task' }).click();
+  await page.getByRole('button', { name: 'Add Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(3);
 
   const searchInput = page.getByRole('searchbox', { name: 'Filter tasks' });
@@ -314,7 +314,7 @@ test('POSITIVE: the Filter tasks box filters the task list and reports when noth
   await searchInput.fill('no-task-matches-this');
   await expect(createdItem).toBeHidden();
   await expect(page.locator('#task-search-empty')).toBeVisible();
-  await expect(page.locator('#task-search-empty')).toHaveText('No tasks match "no-task-matches-this".');
+  await expect(page.locator('#task-search-empty')).toHaveText('No task matches your search.');
 
   // Clearing the box restores the full list and hides the message again.
   await searchInput.fill('');
@@ -335,7 +335,7 @@ test('POSITIVE: the Sort by name button reorders the task list alphabetically', 
   await expect(page.locator('#task-list li')).toHaveCount(2);
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill(`AAA Sortable ${Date.now()}`);
-  await page.getByRole('button', { name: 'Create Task' }).click();
+  await page.getByRole('button', { name: 'Add Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(3);
 
   const sortButton = page.getByRole('button', { name: /Sort by name/ });
@@ -364,7 +364,7 @@ test('POSITIVE: the Sort Z–A button reorders the task list in reverse alphabet
   await expect(page.locator('#task-list li')).toHaveCount(2);
   const titleInput = page.getByRole('textbox', { name: 'Task name' });
   await titleInput.fill(`AAA Sortable ${Date.now()}`);
-  await page.getByRole('button', { name: 'Create Task' }).click();
+  await page.getByRole('button', { name: 'Add Task' }).click();
   await expect(page.locator('#task-list li')).toHaveCount(3);
 
   const reverseButton = page.getByRole('button', { name: /Sort Z.A/ });
