@@ -18,7 +18,7 @@ test.describe('Weekly report (flaky.html)', () => {
     const status = page.locator('#report-status');
     await expect(status).toBeAttached();
 
-    await page.getByRole('button', { name: 'Load report' }).click();
+    await page.getByRole('button', { name: /report/i }).click();
 
     // The report server is sometimes slow -- wait for the actual final status instead of
     // assuming an immediate response.
@@ -53,7 +53,7 @@ test.describe('Weekly report (flaky.html)', () => {
     await expect(status).toHaveText('');
     await expect(status).not.toContainText('Report loaded');
 
-    await page.getByRole('button', { name: 'Load report' }).click();
+    await page.getByRole('button', { name: /report/i }).click();
 
     // While the slow server is still working, the app must show the in-progress state and
     // must NOT falsely report the final result.
