@@ -97,7 +97,7 @@ test('NEGATIVE: approving a timesheet is rejected without a valid admin code or 
   // Wrong admin code -> rejected
   await page.locator('#admin-code').fill('WrongPassword123!');
   await page.getByRole('button', { name: 'Approve timesheet' }).click();
-  await expect(page.locator('#timesheet-message')).toHaveText('Wrong admin code.', { timeout: 10000 });
+  await expect(page.locator('#timesheet-message')).toHaveText('Incorrect admin code.', { timeout: 10000 });
   await expect(page.locator('#timesheet-message')).not.toContainText('Timesheet approved');
 
   // A non-.csv file is rejected (rule: file name must match /\.csv$/i)
@@ -210,7 +210,7 @@ test('SECURITY: script-like timesheet content is rendered as inert text and neve
   await page.locator('#approver').selectOption('Priya Nair');
   await page.locator('#admin-code').fill(payload);
   await page.getByRole('button', { name: 'Approve timesheet' }).click();
-  await expect(page.locator('#timesheet-message')).toHaveText('Wrong admin code.', { timeout: 10000 });
+  await expect(page.locator('#timesheet-message')).toHaveText('Incorrect admin code.', { timeout: 10000 });
   expect(dialogFired).toBe(false);
 
   await reportIssues(page, consoleErrors);
