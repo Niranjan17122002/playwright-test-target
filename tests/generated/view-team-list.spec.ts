@@ -113,7 +113,9 @@ test('NEGATIVE: searching for a member who does not exist is rejected with the r
   await expect(emptyMessage).toBeVisible({ timeout: 5000 });
   await expect(visibleItems).toHaveCount(0);
   // Nothing was added or substituted: the directory itself is unchanged.
-  await expect(teamList.getByRole('listitem')).toHaveCount(TEAM_MEMBERS.length);
+  // Filtering only hides rows with display:none, so they stay in the DOM but
+  // drop out of the accessibility tree -- count the real <li> rows, not roles.
+  await expect(teamList.locator('li')).toHaveCount(TEAM_MEMBERS.length);
   await expect(page.getByRole('heading', { name: 'Team', level: 1 })).toBeVisible();
 
   await reportDiagnostics(page, consoleErrors);
@@ -181,7 +183,7 @@ test('SECURITY: an HTML/script payload typed into Search by name stays inert pla
   // The page stays intact: empty-state for the unmatched query, directory untouched.
   await expect(page.getByText(EMPTY_MESSAGE, { exact: true })).toBeVisible({ timeout: 5000 });
   await expect(page.getByRole('heading', { name: 'Team', level: 1 })).toBeVisible();
-  await expect(page.locator('#team-list').getByRole('listitem')).toHaveCount(TEAM_MEMBERS.length);
+  await expect(page.locator('#team-list li')).toHaveCount(TEAM_MEMBERS.length);
 
   await reportDiagnostics(page, consoleErrors);
 });
