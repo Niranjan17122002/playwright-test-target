@@ -146,7 +146,7 @@
       if (!code) { show('Enter the admin code.', 'error'); return; }
       sha256(code).then(function (hash) {
         if (hash !== ADMIN_CODE_SHA256) {
-          show('Wrong admin code.', 'error');
+          show('Incorrect admin code.', 'error');
           return;
         }
         show('Timesheet approved by ' + approver + ': ' + parsed.total.toFixed(2) + ' hours for ' + parsed.employee + '.', 'success');
