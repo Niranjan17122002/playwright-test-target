@@ -93,9 +93,12 @@ test('POSITIVE: filtering the team list by the Manager role leaves only managers
   await expect(allRows(page).filter({ hasText: 'Maria Chen' })).toBeHidden();
   await expect(emptyMessage(page)).toBeHidden();
 
-  await expect(page.getByRole('main')).toMatchAriaSnapshot(`
-    - heading "Team" [level=1]
-    - text: Priya Nair
+  // The Team page keeps its search box, role filter, Find button and the
+  // 'Invite a team member' form visible while filtering -- only the team list
+  // below them narrows, so assert the filtered contents on the list itself.
+  await expect(page.locator('#team-list')).toMatchAriaSnapshot(`
+    - list:
+      - listitem: Priya Nair Manager
   `);
 
   await reportAndScan(page, issues);
