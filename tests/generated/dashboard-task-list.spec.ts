@@ -94,6 +94,10 @@ test('POSITIVE: Dashboard shows the task list for a signed-in user', async ({ pa
   await reportConsoleErrors(consoleErrors);
 });
 
+test.describe('signed-out visitor', () => {
+  // This scenario needs a genuinely empty saved session, unlike the rest of the file.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
 test('NEGATIVE: Dashboard is blocked for a signed-out visitor', async ({ page }) => {
   const consoleErrors = watchForErrors(page);
 
@@ -115,6 +119,7 @@ test('NEGATIVE: Dashboard is blocked for a signed-out visitor', async ({ page })
 
   await scanAccessibility(page);
   await reportConsoleErrors(consoleErrors);
+});
 });
 
 test('BOUNDARY: Filter box accepts an extreme query and narrows the list', async ({ page }) => {
