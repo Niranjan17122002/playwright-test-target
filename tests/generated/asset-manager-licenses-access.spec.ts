@@ -58,7 +58,7 @@ test.describe('Asset manager role cannot open Licenses', () => {
       await topNav(page).locator('a[href$="/hardware"]').filter({ visible: true }).first().click();
       await expect(page).toHaveURL(/hardware/, { timeout: 3000 });
     }).toPass({ timeout: 25000 });
-    await expect(page.getByRole('heading', { name: 'Assets' })).toBeVisible({ timeout: 25000 });
+    await expect(page.getByRole('heading', { name: 'Assets', level: 3 })).toBeVisible({ timeout: 25000 });
 
     await expect(page.getByRole('main')).toMatchAriaSnapshot(`
       - heading "Assets"
