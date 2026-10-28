@@ -70,11 +70,24 @@ export default async function globalSetup(config: FullConfig) {
     }
     if (!(await shown(pass, 10000))) { write({ ok: false, reason: 'no_form' }); return; }
     await pass.fill(password);
+    // The box the password went into, known by its id, name and autocomplete: the page after a
+    // sign-in can have a password box of its own (seen live on this app's own Application Setup
+    // page), which "any visible password box" took for the sign-in form; a refused sign-in that
+    // reloads the same form shows the same box again.
+    const typed = await pass.evaluate((el) =>
+      [el.id, el.getAttribute('name') || '', el.getAttribute('autocomplete') || ''].join('|'));
+    const sameBoxShown = () => page.evaluate((key) => Array.from(document.querySelectorAll('input[type="password"]')).some((el) =>
+      (el as HTMLElement).getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden' &&
+      [el.id, el.getAttribute('name') || '', el.getAttribute('autocomplete') || ''].join('|') === key), typed).catch(() => true);
     const submit = page.locator(SUBMIT).filter({ visible: true }).first();
     if (await submit.count()) await submit.click({ timeout: 10000 }); else await pass.press('Enter');
-    // Signed in once the password field is gone (a redirect back to the
+    // Signed in once that password field is gone (a redirect back to the
     // same sign-in page leaves it there).
-    const signedIn = await pass.waitFor({ state: 'hidden', timeout: 20000 }).then(() => true, () => false);
+    let signedIn = false;
+    for (let waited = 0; waited < 20000 && !signedIn; waited += 500) {
+      await page.waitForTimeout(500);
+      signedIn = !(await sameBoxShown());
+    }
     if (!signedIn) {
       const texts = (await page.locator(MESSAGES).filter({ visible: true }).allInnerTexts())
         .map((t) => t.replace(/\s+/g, ' ').trim()).filter((t) => t && t.length < 200);
