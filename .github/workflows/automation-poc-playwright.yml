@@ -16,7 +16,9 @@ on:
 
 jobs:
   playwright:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04 (Oct-Nov 2026), where Playwright's browser setup is new and
+    # its package downloads failed ("Temporary failure resolving archive.ubuntu.com", 3 runs in a row).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
