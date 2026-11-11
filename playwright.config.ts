@@ -36,6 +36,8 @@ export default defineConfig({
     // renamed button made 5 tests x 2 tries take 16.9 minutes.
     actionTimeout: 15000,
     navigationTimeout: 20000,
+    // The page's own animations off, as in a local run.
+    contextOptions: { reducedMotion: 'reduce' },
     headless: true,
     // Captured for every test, not just failures -- same reasoning as local
     // headed execution's own config: this runs on a GitHub-hosted runner
