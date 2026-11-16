@@ -19,6 +19,9 @@ function siteLogin() {
 export default defineConfig({
   testDir: './tests/generated',
   retries: 1,
+  // One file at a time, like a local run: every test shares one signed-in account, and the
+  // runner's default (a worker per CPU core) ran files side by side on it.
+  workers: 1,
   // Logs in once and saves the session every test starts from (see
   // auth.setup.ts); a test that logs in by itself starts signed out.
   globalSetup: './auth.setup.ts',
