@@ -14,11 +14,17 @@ on:
         required: false
         default: ""
 
+# The job only reads the repository's code; it never pushes or comments.
+permissions:
+  contents: read
+
 jobs:
   playwright:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -27,8 +33,12 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Run Playwright tests (headed, via virtual display)
-        run: xvfb-run --auto-servernum -- npx playwright test --headed --browser=chromium ${{ inputs.spec_files }}
+        run: xvfb-run --auto-servernum -- npx playwright test --headed --browser=chromium $SPEC_FILES
         env:
+          # Passed as a variable, not pasted into the command: GitHub puts a
+          # ${{ }} value into the script text before the shell reads it, so a
+          # file name holding a ; or $( ) would run as a command.
+          SPEC_FILES: ${{ inputs.spec_files }}
           PLAYWRIGHT_BASE_URL: ${{ inputs.base_url }}
           APP_USERNAME: ${{ secrets.APP_USERNAME }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
